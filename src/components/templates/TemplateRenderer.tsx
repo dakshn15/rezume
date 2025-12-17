@@ -15,10 +15,15 @@ interface TemplateRendererProps {
 export const TemplateRenderer: React.FC<TemplateRendererProps> = ({ resume, templateId, settings }) => {
   const defaultSettings: TemplateSettings = {
     primaryColor: '#1e3a5f',
+    secondaryColor: '#3b82f6',
     accentColor: '#3b82f6',
     fontFamily: 'Inter, sans-serif',
     fontSize: 'medium',
+    spacing: 'normal',
     showPhoto: true,
+    showSummary: true,
+    showProjects: true,
+    showCertifications: true,
     sectionOrder: ['summary', 'experience', 'education', 'skills', 'projects', 'certifications'],
   };
 

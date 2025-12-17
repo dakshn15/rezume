@@ -4,6 +4,7 @@ import { persist } from 'zustand/middleware';
 export interface TemplateSettings {
   primaryColor: string;
   secondaryColor: string;
+  accentColor: string;
   fontFamily: string;
   fontSize: 'small' | 'medium' | 'large';
   spacing: 'compact' | 'normal' | 'relaxed';
@@ -11,6 +12,7 @@ export interface TemplateSettings {
   showSummary: boolean;
   showProjects: boolean;
   showCertifications: boolean;
+  sectionOrder: string[];
 }
 
 export interface ExportSettings {
@@ -40,6 +42,7 @@ export const useSettingsStore = create<SettingsState>()(
       templateSettings: {
         primaryColor: '#1e3a5f',
         secondaryColor: '#3b82f6',
+        accentColor: '#3b82f6',
         fontFamily: 'Inter',
         fontSize: 'medium',
         spacing: 'normal',
@@ -47,6 +50,7 @@ export const useSettingsStore = create<SettingsState>()(
         showSummary: true,
         showProjects: true,
         showCertifications: true,
+        sectionOrder: ['summary', 'experience', 'education', 'skills', 'projects', 'certifications'],
       },
       exportSettings: {
         paperSize: 'a4',
