@@ -4,14 +4,27 @@ import { ModernTemplate } from './ModernTemplate';
 import { ClassicTemplate } from './ClassicTemplate';
 import { MinimalTemplate } from './MinimalTemplate';
 import { CreativeTemplate } from './CreativeTemplate';
+import { TemplateSettings } from '@/store/settingsStore';
 
 interface TemplateRendererProps {
   resume: Resume;
   templateId: string;
+  settings?: TemplateSettings;
 }
 
-export const TemplateRenderer: React.FC<TemplateRendererProps> = ({ resume, templateId }) => {
-  const templates: Record<string, React.FC<{ resume: Resume }>> = {
+export const TemplateRenderer: React.FC<TemplateRendererProps> = ({ resume, templateId, settings }) => {
+  const defaultSettings: TemplateSettings = {
+    primaryColor: '#1e3a5f',
+    accentColor: '#3b82f6',
+    fontFamily: 'Inter, sans-serif',
+    fontSize: 'medium',
+    showPhoto: true,
+    sectionOrder: ['summary', 'experience', 'education', 'skills', 'projects', 'certifications'],
+  };
+
+  const mergedSettings = { ...defaultSettings, ...settings };
+
+  const templates: Record<string, React.FC<{ resume: Resume; settings: TemplateSettings }>> = {
     modern: ModernTemplate,
     classic: ClassicTemplate,
     minimal: MinimalTemplate,
@@ -20,7 +33,7 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({ resume, temp
 
   const Template = templates[templateId] || ModernTemplate;
 
-  return <Template resume={resume} />;
+  return <Template resume={resume} settings={mergedSettings} />;
 };
 
 export const templateInfo = [
