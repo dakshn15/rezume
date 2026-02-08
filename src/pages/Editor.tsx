@@ -1073,6 +1073,20 @@ const Editor = () => {
                   <div className="space-y-6">
                     <div>
                       <label className="text-sm font-semibold mb-3 block">Color Theme</label>
+                      <div className="flex gap-2 mb-2">
+                        <button
+                          onClick={() => updateTemplateSettings({
+                            primaryColor: '#1e3a5f',
+                            accentColor: '#3b82f6',
+                            secondaryColor: '#3b82f6',
+                            fontFamily: 'Inter',
+                            fontSize: 'medium'
+                          })}
+                          className="px-3 py-1.5 rounded-lg text-sm bg-muted hover:bg-muted/80"
+                        >
+                          Reset to default
+                        </button>
+                      </div>
                       <div className="grid grid-cols-3 gap-2">
                         {colorPresets.map((preset) => (
                           <button

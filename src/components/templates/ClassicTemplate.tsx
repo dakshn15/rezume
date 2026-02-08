@@ -1,24 +1,36 @@
 import React from 'react';
 import { Resume } from '@/data/resumeModel';
 import { formatDateRange } from '@/utils/helpers';
+import { TemplateSettings } from '@/store/settingsStore';
+
+const getFontSize = (size: string) => {
+  switch (size) {
+    case 'small': return { base: '11px', heading: '12px', section: '10px' };
+    case 'large': return { base: '14px', heading: '16px', section: '13px' };
+    default: return { base: '12px', heading: '14px', section: '11px' };
+  }
+};
 
 interface TemplateProps {
   resume: Resume;
+  settings?: TemplateSettings;
 }
 
-export const ClassicTemplate: React.FC<TemplateProps> = ({ resume }) => {
+export const ClassicTemplate: React.FC<TemplateProps> = ({ resume, settings }) => {
   const { personalInfo, summary, experience, education, skills, projects, additional } = resume;
+  const merged = { fontFamily: '"Source Serif 4", Georgia, serif', fontSize: 'medium', primaryColor: '#000000', ...(settings || {}) } as TemplateSettings;
+  const fonts = getFontSize(merged.fontSize);
 
   return (
     <div
-  className="resume-paper w-full box-border p-8 font-serif text-[11px] leading-relaxed print:shadow-none"
-  style={{ fontFamily: '"Source Serif 4", Georgia, serif' }}
->
+      className="resume-paper w-full box-border p-8 print:shadow-none"
+      style={{ fontFamily: merged.fontFamily, fontSize: fonts.base, lineHeight: 1.45 }}
+    >
       {/* Header */}
       <div className="text-center border-b-2 border-black pb-4 mb-4">
-        <h1 className="text-2xl font-bold text-black tracking-wide mb-1">{personalInfo.name || 'Your Name'}</h1>
+        <h1 className="text-2xl font-bold tracking-wide mb-1" style={{ color: merged.primaryColor }}>{personalInfo.name || 'Your Name'}</h1>
         {personalInfo.title && (
-          <h2 className="text-sm text-gray-700 italic mb-2">{personalInfo.title}</h2>
+          <h2 className="text-sm italic mb-2" style={{ color: '#4b5563' }}>{personalInfo.title}</h2>
         )}
         <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-[10px] text-gray-600">
           {personalInfo.email && <span>{personalInfo.email}</span>}
@@ -31,7 +43,7 @@ export const ClassicTemplate: React.FC<TemplateProps> = ({ resume }) => {
       {/* Summary */}
       {summary && (
         <div className="mb-4">
-          <h3 className="text-sm font-bold text-black uppercase tracking-widest mb-2 border-b border-gray-300 pb-1">
+          <h3 className="text-sm font-bold uppercase tracking-widest mb-2 border-b border-gray-300 pb-1" style={{ color: merged.primaryColor, fontSize: fonts.heading }}>
             Professional Summary
           </h3>
           <p className="text-gray-700">{summary}</p>

@@ -1,21 +1,33 @@
 import React from 'react';
 import { Resume } from '@/data/resumeModel';
 import { formatDateRange } from '@/utils/helpers';
+import { TemplateSettings } from '@/store/settingsStore';
+
+const getFontSize = (size: string) => {
+  switch (size) {
+    case 'small': return { base: '10.5px', heading: '12px', section: '10px' };
+    case 'large': return { base: '13px', heading: '16px', section: '12px' };
+    default: return { base: '10.5px', heading: '14px', section: '10px' };
+  }
+};
 
 interface TemplateProps {
   resume: Resume;
+  settings?: TemplateSettings;
 }
 
-export const MinimalTemplate: React.FC<TemplateProps> = ({ resume }) => {
+export const MinimalTemplate: React.FC<TemplateProps> = ({ resume, settings }) => {
   const { personalInfo, summary, experience, education, skills, projects, additional } = resume;
+  const merged = { fontFamily: 'Inter, system-ui, sans-serif', fontSize: 'medium', primaryColor: '#111827', ...(settings || {}) } as TemplateSettings;
+  const fonts = getFontSize(merged.fontSize);
 
   return (
-    <div className="resume-paper p-10 font-sans text-[10.5px] leading-relaxed print:shadow-none" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+    <div className="resume-paper p-10 leading-relaxed print:shadow-none" style={{ fontFamily: merged.fontFamily, fontSize: fonts.base, color: '#111827' }}>
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-light text-gray-900 tracking-tight mb-1">{personalInfo.name || 'Your Name'}</h1>
+        <h1 className="tracking-tight mb-1 font-light" style={{ fontSize: fonts.heading, color: merged.primaryColor }}>{personalInfo.name || 'Your Name'}</h1>
         {personalInfo.title && (
-          <h2 className="text-sm text-gray-500 font-light mb-3">{personalInfo.title}</h2>
+          <h2 className="font-light mb-3" style={{ color: '#6b7280', fontSize: fonts.section }}>{personalInfo.title}</h2>
         )}
         <div className="flex flex-wrap gap-x-6 gap-y-1 text-[10px] text-gray-500">
           {personalInfo.email && <span>{personalInfo.email}</span>}
@@ -29,7 +41,7 @@ export const MinimalTemplate: React.FC<TemplateProps> = ({ resume }) => {
       {/* Summary */}
       {summary && (
         <div className="mb-8">
-          <p className="text-gray-600 leading-relaxed max-w-[600px]">{summary}</p>
+          <p className="leading-relaxed max-w-[600px]" style={{ color: '#374151' }}>{summary}</p>
         </div>
       )}
 
