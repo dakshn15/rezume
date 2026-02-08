@@ -118,7 +118,7 @@ const Index = () => {
             <div className="w-9 h-9 rounded-lg bg-gradient-primary flex items-center justify-center">
               <FileText className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="font-bold text-lg text-foreground">Rezume</span>
+            <span className="font-bold text-lg text-foreground">Rezumely</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -937,7 +937,7 @@ const Index = () => {
                   </div>
                   <div>
                     <div className="text-base font-semibold text-foreground mb-1">Email Us</div>
-                    <div className="text-muted-foreground mb-1">support@rezume.com</div>
+                    <div className="text-muted-foreground mb-1">support@rezumely.com</div>
                     <div className="text-xs text-muted-foreground">We reply within 24 hours</div>
                   </div>
                 </div>
@@ -1045,7 +1045,7 @@ const Index = () => {
                 <div className="lg:w-14 w-12 lg:h-14 h-12 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg">
                   <FileText className="lg:h-7 lg:w-7 w-6 h-6 text-white" />
                 </div>
-                <span className="font-black lg:text-3xl text-2xl text-white">Rezume</span>
+                <span className="font-black lg:text-3xl text-2xl text-white">Rezumely</span>
               </div>
               <p className="text-white/80 max-w-md md:mx-0 mx-auto lg:mb-8 mb-5 lg:text-lg">
                 Transform your career with professional, ATS-optimized resumes. Join <span className="font-semibold text-white">50,000+</span> professionals who've landed their dream jobs.
@@ -1131,7 +1131,7 @@ const Index = () => {
             className="border-t border-white/10 pt-5 flex flex-col lg:flex-row lg:text-start text-center justify-between items-center gap-2"
           >
             <p className="text-white/60 text-sm">
-              © 2025 Rezume. All rights reserved. Made with ❤️ for job seekers worldwide.
+              © 2025 Rezumely. All rights reserved. Made with ❤️ for job seekers worldwide.
             </p>
             <div className="flex flex-wrap items-center justify-center sm:gap-6 gap-y-2 gap-3 text-sm">
               <span className="flex items-center gap-2 text-white/70">
