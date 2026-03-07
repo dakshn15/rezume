@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { Link, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
+import { toast } from 'sonner';
 import {
   FileText, Palette, Download, Sparkles, ArrowRight, CheckCircle,
   Mail, Phone, MapPin, Send, Star, Zap, Shield, Clock,
-  Linkedin, Twitter, Github, Menu, X, ChevronLeft, ChevronRight
+  Linkedin, Twitter, Github, Menu, X, ChevronLeft, ChevronRight,
+  ChevronDown, MessageSquare
 } from 'lucide-react';
 import { CustomButton } from '@/components/ui/custom-button';
 import { CustomInput } from '@/components/ui/custom-input';
@@ -20,6 +22,10 @@ import { useAuthStore } from '@/store/authStore';
 const Index = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const logout = useAuthStore((state) => state.logout);
+  const navigate = useNavigate();
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
+
   const features = [
     { icon: Zap, title: 'Lightning Fast', description: 'Build your resume in minutes with our intuitive editor' },
     { icon: Shield, title: 'ATS-Optimized', description: 'Templates designed to pass applicant tracking systems' },
@@ -31,32 +37,28 @@ const Index = () => {
 
   const templates = [
     {
-      id: 'modern',
-      name: 'Modern',
-      description: 'Two-column with sidebar',
-      color: '#1e3a5f',
-      image: '/templates/modern-template.svg'
-    },
-    {
-      id: 'classic',
-      name: 'Classic',
-      description: 'Traditional single-column',
-      color: '#1f2937',
-      image: '/templates/classic-template.svg'
-    },
-    {
-      id: 'minimal',
-      name: 'Minimal',
-      description: 'Clean & ATS-friendly',
-      color: '#6b7280',
-      image: '/templates/minimal-template.svg'
+      id: 'professional',
+      name: 'Professional',
+      description: 'Clean, corporate-focused layout',
+      image: '/thumbnails/professional.png'
     },
     {
       id: 'creative',
       name: 'Creative',
       description: 'Bold & vibrant design',
-      color: '#7c3aed',
-      image: '/templates/creative-template.svg'
+      image: '/thumbnails/creative.png'
+    },
+    {
+      id: 'developer',
+      name: 'Developer',
+      description: 'Tailored for software engineers',
+      image: '/thumbnails/developer.png'
+    },
+    {
+      id: 'executive',
+      name: 'Executive',
+      description: 'Sophisticated leadership layout',
+      image: '/thumbnails/executive.png'
     },
   ];
 
@@ -143,11 +145,23 @@ const Index = () => {
 
           <div className="flex items-center gap-4">
             {isAuthenticated() ? (
-              <Link to="/editor" className="hidden sm:block">
-                <CustomButton variant="primary" size="sm">
-                  Dashboard <ArrowRight />
-                </CustomButton>
-              </Link>
+              <div className="hidden sm:flex items-center gap-4">
+                <Link to="/editor" className="hidden sm:block">
+                  <CustomButton variant="primary" size="sm">
+                    Dashboard <ArrowRight />
+                  </CustomButton>
+                </Link>
+                <button
+                  onClick={() => {
+                    logout();
+                    toast.success('Logged out');
+                    navigate('/');
+                  }}
+                  className="text-sm font-medium hover:text-red-600 transition-colors"
+                >
+                  Logout
+                </button>
+              </div>
             ) : (
               <div className="hidden sm:flex items-center gap-4">
                 <Link to="/login" className="text-sm font-medium hover:text-primary transition-colors">
@@ -218,6 +232,19 @@ const Index = () => {
                   Get Started <ArrowRight />
                 </CustomButton>
               </Link>
+              {isAuthenticated() && (
+                <button
+                  onClick={() => {
+                    logout();
+                    toast.success('Logged out');
+                    setIsMobileMenuOpen(false);
+                    navigate('/');
+                  }}
+                  className="w-full px-4 py-2 text-sm hover:bg-muted transition-colors"
+                >
+                  Logout
+                </button>
+              )}
             </nav>
           </motion.div>
         )}
@@ -602,7 +629,7 @@ const Index = () => {
                     <Link to={`/editor?template=${template.id}`} className="block relative h-full">
                       <div className="glass shadow-md rounded-2xl overflow-hidden border-border hover:border-primary/30 transition-all duration-300 hover:shadow-lg h-full flex flex-col">
                         {/* Template Preview */}
-                        <div className="aspect-[3/4] relative overflow-hidden bg-gradient-to-br from-muted/20 to-muted/40">
+                        <div className="h-80 relative overflow-hidden bg-gradient-to-br from-muted/20 to-muted/40">
                           <motion.img
                             src={template.image}
                             alt={`${template.name} template preview`}
@@ -654,18 +681,59 @@ const Index = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.6, duration: 0.3 }}
-            className="text-center mt-5"
+            className="text-center mt-8"
           >
-            <p className="text-muted-foreground mb-4">
-              Can't decide? Start with any template and switch anytime during editing.
-            </p>
-            <Link to="/editor" className="group">
-              <CustomButton variant="primary">
-                Start Creating Now
+            <Link to="/templates" className="group">
+              <CustomButton variant="primary" size="lg">
+                View All Templates
                 <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </CustomButton>
             </Link>
           </motion.div>
+        </div>
+      </section>
+
+      {/* AI Features Highlight */}
+      <section className="py-20 bg-primary/5 border-y border-primary/10">
+        <div className="container mx-auto px-4">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Supercharged with <span className="text-primary">AI</span></h2>
+            <p className="text-muted-foreground text-lg">
+              Let our advanced AI assistant help you land your dream job faster.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="bg-background p-8 rounded-2xl shadow-sm border hover:border-primary/50 transition-colors">
+              <div className="bg-primary/10 w-12 h-12 rounded-xl flex items-center justify-center mb-6">
+                <FileText className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="text-xl font-bold mb-3">Smart Summary Generation</h3>
+              <p className="text-muted-foreground">
+                Struggling to write your professional profile? Our AI analyzes your experience and automatically generates a compelling, ATS-friendly summary tailored to your target role.
+              </p>
+            </div>
+
+            <div className="bg-background p-8 rounded-2xl shadow-sm border hover:border-primary/50 transition-colors">
+              <div className="bg-primary/10 w-12 h-12 rounded-xl flex items-center justify-center mb-6">
+                <CheckCircle className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="text-xl font-bold mb-3">Job Match Scoring</h3>
+              <p className="text-muted-foreground">
+                Paste a job description and our AI will immediately score your resume's match percentage. Identify missing keywords and fix skill gaps before you click submit.
+              </p>
+            </div>
+
+            <div className="bg-background p-8 rounded-2xl shadow-sm border hover:border-primary/50 transition-colors">
+              <div className="bg-primary/10 w-12 h-12 rounded-xl flex items-center justify-center mb-6">
+                <Sparkles className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="text-xl font-bold mb-3">Bullet Point Optimization</h3>
+              <p className="text-muted-foreground">
+                Transform weak bullet points into powerful, action-driven achievements. Our AI suggests improvements that quantify your impact and impress hiring managers.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -811,6 +879,91 @@ const Index = () => {
               </CustomButton>
             </Link>
           </motion.div>
+        </div>
+      </section>
+
+      {/* Interactive FAQ Section */}
+      <section id="faq" className="lg:py-16 py-10 bg-gradient-to-b from-background to-muted/20 relative overflow-hidden">
+        {/* Decorative elements */}
+        <div className="absolute top-0 left-1/4 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
+
+        <div className="container mx-auto px-4 max-w-4xl relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="text-center lg:mb-8 mb-5"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2, duration: 0.6 }}
+              className="inline-flex leading-none items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20 md:mb-5 mb-4"
+            >
+              <MessageSquare className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium text-primary">Got Questions?</span>
+            </motion.div>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold mb-4 max-w-xl mx-auto tracking-tight">Frequently Asked Questions</h2>
+            <p className="text-muted-foreground text-sm sm:text-base max-w-2xl mx-auto">Everything you need to know about Rezumely to build your perfect, ATS-winning resume today.</p>
+          </motion.div>
+
+          <div className="space-y-4">
+            {[
+              {
+                question: "Are the resumes really ATS-friendly?",
+                answer: "Yes. Our templates are specifically coded to pass through Applicant Tracking Systems (ATS) cleanly. We avoid using complex tables, text boxes, and graphics that commonly cause parsing failures in modern recruiting software."
+              },
+              {
+                question: "Is Rezumely completely free?",
+                answer: "Yes! You can build, edit, and download your resume as a high-quality PDF completely free of charge. Creating an account is only required when you want to save your progress to the cloud so you can access it later from any device."
+              },
+              {
+                question: "How does the AI Job Match work?",
+                answer: "You can paste the text of a job description you are targeting directly into our editor. Our AI analyzes both documents, extracts key requirements, matches them against your experience, and gives you a score along with actionable feedback on missing keywords."
+              },
+              {
+                question: "Is my data secure and private?",
+                answer: "We take data privacy very seriously. Your resume data is encrypted in our database, and we never sell your personal information to third parties. You maintain full ownership of your data and can delete your account and all associated resumes at any time."
+              }
+            ].map((faq, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                className="bg-white dark:bg-slate-900 rounded-2xl border border-border shadow-sm overflow-hidden transition-all duration-300 hover:border-primary/30 hover:shadow-md"
+              >
+                <button
+                  onClick={() => setOpenFaqIndex(openFaqIndex === index ? null : index)}
+                  className="w-full flex items-center justify-between p-4 sm:p-5 lg:p-6 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                  aria-expanded={openFaqIndex === index}
+                >
+                  <h3 className="text-base sm:text-lg font-semibold pr-4 text-foreground">{faq.question}</h3>
+                  <div className={`shrink-0 flex items-center justify-center w-8 h-8 rounded-full transition-transform duration-300 ${openFaqIndex === index ? 'bg-primary/20 text-primary rotate-180' : 'bg-muted text-muted-foreground'}`}>
+                    <ChevronDown className="h-5 w-5" />
+                  </div>
+                </button>
+                <AnimatePresence>
+                  {openFaqIndex === index && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                    >
+                      <div className="px-4 sm:px-5 lg:px-6 pb-4 sm:pb-5 lg:pb-6 pt-0 text-sm sm:text-base text-muted-foreground leading-relaxed">
+                        {faq.answer}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 

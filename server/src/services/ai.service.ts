@@ -59,8 +59,22 @@ const askGeminiJSON = async (prompt: string, systemInstruction?: string): Promis
         });
 
         const result = await modelWithSystem.generateContent(prompt);
-        const text = result.response.text();
-        return JSON.parse(text);
+        let text = result.response.text();
+
+        // Strip markdown blocks if Gemini returns them despite mimeType
+        if (text.startsWith('```')) {
+            const match = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+            if (match && match[1]) {
+                text = match[1];
+            }
+        }
+
+        try {
+            return JSON.parse(text);
+        } catch (parseError) {
+            console.error("Failed to parse Gemini JSON. Raw text:", text);
+            throw new Error("Invalid JSON returned by AI.");
+        }
     });
 };
 

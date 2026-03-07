@@ -1,73 +1,93 @@
-# Welcome to your Lovable project
+# Rezumely
 
-## Project info
+**Your Career, Perfected. 🚀**
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+Rezumely is a premium, full-stack resume builder designed to help job seekers stand out in today's competitive market. Built from the ground up to empower professionals, it offers an intuitive editing experience, flawless PDF generation, and AI-driven insights to ensure your resume gets noticed.
 
-## How can I edit this code?
+## ✨ Why Rezumely?
 
-There are several ways of editing your application.
+- **Real-Time Editor:** Watch your resume assemble instantly as you type. Sort, edit, and organize your experience with a seamless drag-and-drop interface.
+- **ATS-Optimized Templates:** Choose from beautifully crafted templates (Professional, Executive, Classic, and Academic). All templates are rigorously designed to be machine-readable by Applicant Tracking Systems—meaning no unparseable graphics or broken tables.
+- **AI Job Matcher:** Paste a targeted job description directly into the editor. Our AI engine instantly analyzes your resume, scores your compatibility, and suggests essential missing keywords.
+- **Pixel-Perfect PDF Export:** Say goodbye to awkward page breaks and shifting text. Rezumely utilizes a custom-built rendering engine to deliver a pristine, 1:1 single-page PDF that perfectly mirrors your preview.
+- **Secure Cloud Save:** Create an account to securely save your resumes to the cloud. Access, edit, and download your documents from any device, anytime.
 
-**Use Lovable**
+## 🛠️ The Technology Behind It
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+Rezumely was personally developed and engineered as a robust full-stack application.
 
-Changes made via Lovable will be committed automatically to this repo.
+- **Frontend Ecosystem:** React, Vite, and TypeScript power the responsive UI.
+- **Design System:** Built using Tailwind CSS for utility-first styling, Framer Motion for liquid-smooth animations, and Radix UI primitives for accessible component architecture.
+- **Backend Architecture:** A scalable Node.js API handles secure authentication, user sessions, and AI service integrations.
+- **Data Persistence:** PostgreSQL paired with Prisma ORM ensures fast, reliable, and secure data storage for all user accounts and saved resumes.
+- **PDF Generation Engine:** A highly complex, custom-tuned pipeline utilizing `html2canvas` and `jsPDF`.
 
-**Use your preferred IDE**
+## � Getting Started (Local Setup)
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+If you are visiting this repository and would like to run the project locally on your machine, follow these steps.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Prerequisites
+- Node.js (v18+)
+- npm or yarn
+- A PostgreSQL database (e.g., Neon serverless, local PostgreSQL instance)
 
-Follow these steps:
+### Setup Instructions
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-username/rezumely.git
+   cd rezumely
+   ```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+2. **Install dependencies**
+   This repository utilizes concurrent scripts to run both the client and server.
+   ```bash
+   npm install
+   # Next, navigate to the server and install its discrete dependencies:
+   cd server
+   npm install
+   cd ..
+   ```
 
-# Step 3: Install the necessary dependencies.
-npm i
+3. **Configure Environment Variables**
+   Create two `.env` files—one at the root for the frontend, and one inside the `server/` folder for the backend.
+   
+   **Root `.env` (Frontend):**
+   ```env
+   VITE_API_URL=http://localhost:5000/api
+   ```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+   **`server/.env` (Backend):**
+   ```env
+   # Replace with your actual Postgres connection string
+   DATABASE_URL="postgresql://user:password@host:port/dbname?schema=public"
+   PORT=5000
+   JWT_SECRET="your-super-secret-jwt-key"
+   FRONTEND_URL="http://localhost:5173"
+   ```
 
-**Edit a file directly in GitHub**
+4. **Initialize the Database**
+   Push the Prisma schema to your connected PostgreSQL database.
+   ```bash
+   cd server
+   npx prisma migrate dev --name init
+   cd ..
+   ```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+5. **Start the Development Server**
+   Start both the Vite frontend client and Node/Express backend simultaneously:
+   ```bash
+   npm run dev
+   ```
 
-**Use GitHub Codespaces**
+   The application will be accessible at `http://localhost:5173`.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## �💼 Built for You
 
-## What technologies are used for this project?
+Rezumely is currently deployed and actively helping users achieve their career goals. 
 
-This project is built with:
+Whether you are looking for your first internship, transitioning into a new industry, or seeking an executive role, Rezumely provides the tools you need to build a compelling narrative.
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+---
 
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+*© 2026 Rezumely. Created and maintained as a proprietary personal project. All rights reserved. Do not clone, distribute, or host without explicit permission.*

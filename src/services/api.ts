@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
+import { toast } from 'sonner';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -28,11 +29,11 @@ api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 401) {
-            const { logout } = useAuthStore.getState();
-            logout();
-            // Redirect to login if not already there
-            if (window.location.pathname !== '/login') {
-                window.location.href = '/login';
+            const { logout, token } = useAuthStore.getState();
+            if (token) {
+                // Only toast and logout if there actually WAS a token (prevents spam for guests)
+                logout();
+                toast.error("Your session has expired. Log in again to save to the cloud.");
             }
         }
         return Promise.reject(error);

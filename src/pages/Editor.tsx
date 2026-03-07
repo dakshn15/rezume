@@ -41,10 +41,13 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { templateInfo } from '@/components/templates/TemplateRenderer';
+import { useAuthStore } from '@/store/authStore';
 
 const Editor = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const logout = useAuthStore((state) => state.logout);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const currentResumeRaw = useResumeStore((state) => state.currentResume);
   const currentResume = React.useMemo(() => {
     return {
@@ -92,8 +95,7 @@ const Editor = () => {
     canRedo,
     setTemplate,
     saveResume,
-    fetchResumes,
-    isSaved: isStoreSaved
+    fetchResumes
   } = useResumeStore();
 
   const { exportSettings, templateSettings, updateTemplateSettings } = useSettingsStore();
@@ -112,18 +114,17 @@ const Editor = () => {
 
   // Calculate fit-to-width zoom
   const calculateFitZoom = () => {
+    const resumeWidth = 794; // 210mm in pixels at 96dpi
     if (!previewContainerRef.current) {
       // Fallback calculation
       const containerWidth = 600;
       const padding = 64; // px-4 xl:px-8 = 16px + 32px = 48px each side
       const availableWidth = containerWidth - padding;
-      const resumeWidth = 794; // 210mm in pixels at 96dpi
       return Math.min(0.85, (availableWidth / resumeWidth) * 0.9);
     }
     const containerWidth = previewContainerRef.current.offsetWidth;
     const padding = 64; // Account for horizontal padding
     const availableWidth = containerWidth - padding;
-    const resumeWidth = 794; // 210mm in pixels at 96dpi
     return Math.min(0.85, (availableWidth / resumeWidth) * 0.9);
   };
 
@@ -177,7 +178,7 @@ const Editor = () => {
   // Apply template from URL parameter
   useEffect(() => {
     const templateParam = searchParams.get('template');
-    if (templateParam && ['modern', 'classic', 'minimal', 'creative'].includes(templateParam)) {
+    if (templateParam && templateInfo.some(t => t.id === templateParam)) {
       setTemplate(templateParam);
       // Clean up URL by removing the template parameter
       navigate('/editor', { replace: true });
@@ -185,6 +186,12 @@ const Editor = () => {
   }, [searchParams, setTemplate, navigate]);
 
   const handleExportPDF = async () => {
+    if (!isAuthenticated()) {
+      toast.error('Please create an account to download your resume!');
+      navigate('/register');
+      return;
+    }
+
     setIsExporting(true);
     try {
       if (!previewRef.current) {
@@ -214,6 +221,11 @@ const Editor = () => {
   };
 
   const handleSave = async () => {
+    if (!isAuthenticated()) {
+      toast.error('Please create an account to save your resume to the cloud!');
+      navigate('/register');
+      return;
+    }
     await saveResume(currentResume);
     setIsSaved(true);
   };
@@ -377,15 +389,17 @@ const Editor = () => {
             <Palette className="h-4 w-4" />
           </CustomButton>
 
-          {/* Version History */}
-          <CustomButton
-            variant={showVersionHistory ? "default" : "outline"}
-            size="sm"
-            onClick={() => setShowVersionHistory(!showVersionHistory)}
-            title="Version History"
-          >
-            <Clock className="h-4 w-4" />
-          </CustomButton>
+          {/* Version History (Auth Required) */}
+          {isAuthenticated() && (
+            <CustomButton
+              variant={showVersionHistory ? "default" : "outline"}
+              size="sm"
+              onClick={() => setShowVersionHistory(!showVersionHistory)}
+              title="Version History"
+            >
+              <Clock className="h-4 w-4" />
+            </CustomButton>
+          )}
 
           {/* Save */}
           <CustomButton variant="outline" size="sm" onClick={handleSave}>
@@ -404,42 +418,20 @@ const Editor = () => {
             <span className="hidden sm:inline">Export</span>
           </CustomButton>
 
-          {/* Share Button */}
-          <CustomButton
-            variant="outline"
-            size="sm"
-            onClick={async () => {
-              const url = window.location.href;
-              let success = false;
-              // Primary: modern Clipboard API
-              try {
-                await navigator.clipboard.writeText(url);
-                success = true;
-              } catch {
-                // Fallback for non-HTTPS or restricted environments
-                try {
-                  const ta = document.createElement('textarea');
-                  ta.value = url;
-                  ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none;';
-                  document.body.appendChild(ta);
-                  ta.focus();
-                  ta.select();
-                  success = document.execCommand('copy');
-                  document.body.removeChild(ta);
-                } catch {
-                  success = false;
-                }
-              }
-              if (success) {
-                toast.success('Link copied to clipboard!');
-              } else {
-                toast.error('Failed to copy link. Please copy the URL manually.');
-              }
-            }}
-            title="Copy Link"
-          >
-            <Globe className="h-4 w-4" />
-          </CustomButton>
+          {/* Logout (Auth Required) */}
+          {isAuthenticated() && (
+            <CustomButton
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                logout();
+                toast.success('Logged out');
+                navigate('/');
+              }}
+            >
+              Logout
+            </CustomButton>
+          )}
 
           {/* Mobile Menu */}
           <button

@@ -11,6 +11,7 @@ import Editor from "./pages/Editor";
 import { PublicResume } from "./pages/PublicResume";
 import PrintPreview from "./pages/PrintPreview";
 import NotFound from "./pages/NotFound";
+import TemplatesPage from "./pages/TemplatesPage";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -35,16 +36,15 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/templates" element={<TemplatesPage />} />
               <Route path="/resume-templates/:role" element={<RoleLandingPage />} />
               <Route path="/blog" element={<BlogIndex />} />
               <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/p/:idOrSlug" element={<PublicResume />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />
-              <Route element={<ProtectedRoute />}>
-                <Route path="/editor" element={<Editor />} />
-                <Route path="/preview/:id" element={<PrintPreview />} />
-              </Route>
+              <Route path="/editor" element={<Editor />} />
+              <Route path="/preview/:id" element={<PrintPreview />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

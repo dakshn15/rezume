@@ -4,6 +4,10 @@ import { ModernTemplate } from './ModernTemplate';
 import { ClassicTemplate } from './ClassicTemplate';
 import { MinimalTemplate } from './MinimalTemplate';
 import { CreativeTemplate } from './CreativeTemplate';
+import { ProfessionalTemplate } from './ProfessionalTemplate';
+import { ExecutiveTemplate } from './ExecutiveTemplate';
+import { DeveloperTemplate } from './DeveloperTemplate';
+import { AcademicTemplate } from './AcademicTemplate';
 import { TemplateSettings } from '@/store/settingsStore';
 
 interface TemplateRendererProps {
@@ -34,6 +38,10 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({ resume, temp
     classic: ClassicTemplate,
     minimal: MinimalTemplate,
     creative: CreativeTemplate,
+    professional: ProfessionalTemplate,
+    executive: ExecutiveTemplate,
+    developer: DeveloperTemplate,
+    academic: AcademicTemplate,
   };
 
   const Template = templates[templateId] || ModernTemplate;
@@ -68,5 +76,29 @@ export const templateInfo = [
     name: 'Creative',
     description: 'Bold colors and timeline design for creative professionals',
     color: '#7c3aed',
+  },
+  {
+    id: 'professional',
+    name: 'Professional',
+    description: 'Clean, corporate-focused layout standard for business roles',
+    color: '#2563eb',
+  },
+  {
+    id: 'executive',
+    name: 'Executive',
+    description: 'Sophisticated layout emphasizing leadership and high-level achievements',
+    color: '#1e293b',
+  },
+  {
+    id: 'developer',
+    name: 'Developer',
+    description: 'Tailored for software engineers, highlighting tech stacks and projects',
+    color: '#10b981',
+  },
+  {
+    id: 'academic',
+    name: 'Academic',
+    description: 'Traditional CV format suited for research and higher education',
+    color: '#000000',
   },
 ];

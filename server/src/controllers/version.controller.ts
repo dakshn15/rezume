@@ -103,7 +103,15 @@ export const restoreVersion = async (req: Request, res: Response) => {
             }
         });
 
-        res.json(updatedResume);
+        // Parse JSON string back to object for the frontend
+        const parsedResume = {
+            ...updatedResume,
+            resumeJson: typeof updatedResume.resumeJson === 'string'
+                ? JSON.parse(updatedResume.resumeJson)
+                : updatedResume.resumeJson
+        };
+
+        res.json(parsedResume);
 
     } catch (error) {
         console.error('Restore Version Error:', error);

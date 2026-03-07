@@ -59,7 +59,7 @@ export const ClassicTemplate: React.FC<TemplateProps> = ({ resume, settings }) =
           <div className="space-y-4">
             {experience.map((exp) => (
               <div key={exp.id} className="print-break-inside-avoid">
-                <div className="flex justify-between items-baseline gap-2 flex-wrap">
+                <div className="flex justify-between items-end gap-2 flex-wrap">
                   <h4 className="font-bold text-black">{exp.position}</h4>
                   <span className="text-[10px] text-gray-600 italic">
                     {formatDateRange(exp.startDate, exp.endDate, exp.current)}
@@ -89,7 +89,7 @@ export const ClassicTemplate: React.FC<TemplateProps> = ({ resume, settings }) =
           <div className="space-y-3">
             {education.map((edu) => (
               <div key={edu.id} className="print-break-inside-avoid">
-                <div className="flex justify-between items-baseline gap-2 flex-wrap">
+                <div className="flex justify-between items-end gap-2 flex-wrap">
                   <h4 className="font-bold text-black">{edu.degree} in {edu.field}</h4>
                   <span className="text-[10px] text-gray-600 italic">
                     {formatDateRange(edu.startDate, edu.endDate, false)}

@@ -3,6 +3,7 @@ import { persist, devtools } from 'zustand/middleware';
 import { Resume, defaultResume, Experience, Education, Project, Certification, Skills } from '@/data/resumeModel';
 import { nanoid } from 'nanoid';
 import api from '@/services/api';
+import { useAuthStore } from './authStore';
 
 interface HistoryState {
   past: Resume[];
@@ -422,6 +423,9 @@ export const useResumeStore = create<ResumeState>()(
 
         // API Actions
         fetchResumes: async () => {
+          if (!useAuthStore.getState().isAuthenticated()) {
+            return; // Skip fetching for guests, rely on persisted local state
+          }
           try {
             const response = await api.get('/resumes');
             // Assuming backend returns { resumes: Resume[] } or Resume[]
@@ -442,6 +446,16 @@ export const useResumeStore = create<ResumeState>()(
 
         saveResume: async (resume) => {
           set({ isSaving: true });
+
+          if (!useAuthStore.getState().isAuthenticated()) {
+            // Unauthenticated users rely purely on Zustand local persist
+            set({
+              lastSaved: new Date().toISOString(),
+              isSaving: false
+            });
+            return;
+          }
+
           try {
             // Optimistic update logic:
             // If the ID is a nanoid (length 21 default), it's likely local-only.
