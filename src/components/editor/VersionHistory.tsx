@@ -6,6 +6,7 @@ import { CustomButton } from '@/components/ui/custom-button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import api from '@/services/api';
 import { toast } from 'sonner';
+import { defaultResume } from '@/data/resumeModel';
 
 interface Version {
     id: string;
@@ -22,9 +23,10 @@ export const VersionHistory = ({ onClose }: { onClose: () => void }) => {
         fetchVersions();
     }, [currentResume.id]);
 
-    const fetchVersions = async () => {
+    const fetchVersions = async (id?: string) => {
         try {
-            const response = await api.get(`/versions/${currentResume.id}`);
+            const resumeId = id || currentResume.id;
+            const response = await api.get(`/versions/${resumeId}`);
             setVersions(response.data);
         } catch (error) {
             console.error("Failed to fetch versions", error);
@@ -38,10 +40,13 @@ export const VersionHistory = ({ onClose }: { onClose: () => void }) => {
             // Ensure current state is saved first
             await saveResume(currentResume);
 
+            // Fetch the updated ID from store in case it was just created (nanoid -> UUID)
+            const latestResumeId = useResumeStore.getState().currentResume.id;
+
             const label = `Version ${versions.length + 1} - ${format(new Date(), 'MMM d, h:mm a')}`;
-            await api.post(`/versions/${currentResume.id}`, { label });
+            await api.post(`/versions/${latestResumeId}`, { label });
             toast.success("Version created successfully");
-            fetchVersions();
+            fetchVersions(latestResumeId);
         } catch (error) {
             toast.error("Failed to create version");
         }
@@ -51,7 +56,29 @@ export const VersionHistory = ({ onClose }: { onClose: () => void }) => {
         if (!confirm("Are you sure? This will overwrite your current resume.")) return;
         try {
             const response = await api.post(`/versions/${currentResume.id}/restore/${versionId}`);
-            setCurrentResume(response.data);
+
+            // Merge with defaultResume to ensure nested objects like personalInfo exist
+            // This prevents "Cannot read properties of undefined (reading 'name')" crash
+            const restoredData = response.data.resumeJson || response.data;
+            const safeResume = {
+                ...defaultResume,
+                ...restoredData,
+                id: currentResume.id, // Preserve current ID so we don't accidentally rename the document internally
+                personalInfo: {
+                    ...defaultResume.personalInfo,
+                    ...(restoredData.personalInfo || {})
+                },
+                skills: {
+                    ...defaultResume.skills,
+                    ...(restoredData.skills || {})
+                },
+                additional: {
+                    ...defaultResume.additional,
+                    ...(restoredData.additional || {})
+                }
+            };
+
+            setCurrentResume(safeResume);
             toast.success("Resume restored to version");
             onClose(); // Close panel after restore to see changes
         } catch (error) {
