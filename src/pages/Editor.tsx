@@ -29,7 +29,7 @@ import {
   Undo2, Redo2, Award, Heart, Palette, Type, ChevronDown,
   Check, RotateCcw, ZoomIn, ZoomOut, X, Sparkles,
   Mail, Phone, MapPin, Linkedin, Github, Globe, Calendar,
-  Building2, CheckCircle2, Circle, Menu, Settings2, Clock
+  Building2, CheckCircle2, Circle, Menu, Settings2, Clock, LogOut
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -42,6 +42,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { templateInfo } from '@/components/templates/TemplateRenderer';
 import { useAuthStore } from '@/store/authStore';
+import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 
 const Editor = () => {
   const [searchParams] = useSearchParams();
@@ -321,7 +322,7 @@ const Editor = () => {
 
         <div className="flex items-center gap-2">
           {/* Undo/Redo */}
-          <div className="hidden sm:flex items-center gap-1 border-r pr-2">
+          <div className="hidden sm:flex items-center gap-1 border-r pr-2 me-2">
             <button
               onClick={() => canUndo() && undo()}
               disabled={!canUndo()}
@@ -345,7 +346,7 @@ const Editor = () => {
               variant="outline"
               size="sm"
               onClick={() => setShowSamples(!showSamples)}
-              className="gap-2"
+              className="gap-2 sm:px-3 sm:py-2.5 p-2"
             >
               <Sparkles className="h-4 w-4" />
               <span className="hidden sm:inline">Samples</span>
@@ -384,6 +385,7 @@ const Editor = () => {
           <CustomButton
             variant={showStylePanel ? "default" : "outline"}
             size="sm"
+            className="sm:px-3 sm:py-2.5 p-2"
             onClick={() => setShowStylePanel(!showStylePanel)}
           >
             <Palette className="h-4 w-4" />
@@ -394,6 +396,7 @@ const Editor = () => {
             <CustomButton
               variant={showVersionHistory ? "default" : "outline"}
               size="sm"
+              className="sm:px-3 sm:py-2.5 p-2"
               onClick={() => setShowVersionHistory(!showVersionHistory)}
               title="Version History"
             >
@@ -401,10 +404,7 @@ const Editor = () => {
             </CustomButton>
           )}
 
-          {/* Save */}
-          <CustomButton variant="outline" size="sm" onClick={handleSave}>
-            {isSaved ? <Check className="h-4 w-4 text-green-500" /> : <Save className="h-4 w-4" />}
-          </CustomButton>
+
 
           {/* Export */}
           <CustomButton
@@ -412,7 +412,7 @@ const Editor = () => {
             size="sm"
             onClick={handleExportPDF}
             isLoading={isExporting}
-            className="gap-2"
+            className="gap-2 sm:px-3 sm:py-2.5 p-2"
           >
             <Download className="h-4 w-4" />
             <span className="hidden sm:inline">Export</span>
@@ -428,8 +428,11 @@ const Editor = () => {
                 toast.success('Logged out');
                 navigate('/');
               }}
+              title="Logout"
+              className="gap-2 sm:px-3 sm:py-2.5 p-2"
             >
-              Logout
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline">Logout</span>
             </CustomButton>
           )}
 
@@ -445,81 +448,28 @@ const Editor = () => {
 
       <div className="flex-1 flex overflow-hidden">
         {/* Left Sidebar - Sections */}
-        <aside className="hidden md:flex max-w-[350px] border-r bg-card flex-col shrink-0">
-          <div className="p-4 border-b">
+        <aside className={`md:static fixed left-0 bg-card border-r z-40 overflow-hidden h-[calc(100vh-64px)] flex xl:max-w-[350px] max-w-[290px] w-full flex-col shrink-0 transition-transform duration-300 ${showMobileMenu ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+          <div className="p-4 border-b shrink-0">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
                 Sections
               </h2>
-              <span className="text-xs text-muted-foreground">{completion}% complete</span>
-            </div>
-          </div>
-
-          <div className="flex-1 overflow-y-auto p-2 space-y-1 scrollbar-thin min-h-[40%]">
-            {sections.map((section) => {
-              const Icon = section.icon;
-              const isActive = activeSection === section.id;
-              const isComplete = getSectionStatus(section.id);
-              return (
-                <button
-                  key={section.id}
-                  onClick={() => setActiveSection(section.id)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all text-left relative ${isActive
-                    ? 'bg-primary/10 text-primary font-medium'
-                    : 'text-muted-foreground hover:bg-muted'
-                    }`}
-                >
-                  <div
-                    className="p-1.5 rounded-md"
-                    style={{
-                      backgroundColor: isActive ? section.color : 'transparent',
-                      color: isActive ? 'white' : 'inherit',
-                    }}
-                  >
-                    <Icon className="h-4 w-4" />
-                  </div>
-                  <span className="flex-1">{section.label}</span>
-                  {isComplete && (
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="p-4 border-t overflow-y-auto scrollbar-thin">
-            <ATSScore />
-            <div className="mt-4">
-              <JobMatcher />
-            </div>
-            <div className="mt-4">
-              <CoverLetterGenerator />
-            </div>
-            <div className="mt-4">
-              <ResumeUpload />
-            </div>
-          </div>
-        </aside>
-
-        {/* Mobile Sidebar */}
-        <AnimatePresence>
-          {showMobileMenu && (
-            <motion.div
-              initial={{ x: -300 }}
-              animate={{ x: 0 }}
-              exit={{ x: -300 }}
-              className="md:hidden fixed left-0 w-64 bg-card border-r z-40 overflow-y-auto h-[calc(100vh-64px)]"
-            >
-              <div className="p-4 border-b flex items-center justify-between">
-                <h2 className="font-semibold">Sections</h2>
-                <button onClick={() => setShowMobileMenu(false)}>
-                  <X className="h-5 w-5" />
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-muted-foreground">{completion}% complete</span>
+                <button onClick={() => setShowMobileMenu(false)} className="md:hidden text-muted-foreground hover:text-black transition-colors">
+                  <X className="h-4 w-4" />
                 </button>
               </div>
-              <div className="p-2 space-y-1">
+            </div>
+          </div>
+
+          <PanelGroup direction="vertical" className="flex-1 overflow-hidden">
+            <Panel defaultSize={60} minSize={20} className="flex flex-col">
+              <div className="flex-1 overflow-y-auto p-2 space-y-1 scrollbar-thin">
                 {sections.map((section) => {
                   const Icon = section.icon;
                   const isActive = activeSection === section.id;
+                  const isComplete = getSectionStatus(section.id);
                   return (
                     <button
                       key={section.id}
@@ -527,18 +477,50 @@ const Editor = () => {
                         setActiveSection(section.id);
                         setShowMobileMenu(false);
                       }}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm ${isActive ? 'bg-primary/10 text-primary' : 'text-muted-foreground'
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all text-left relative ${isActive
+                        ? 'bg-primary/10 text-primary font-medium'
+                        : 'text-muted-foreground hover:bg-muted'
                         }`}
                     >
-                      <Icon className="h-4 w-4" />
-                      {section.label}
+                      <div
+                        className="p-1.5 rounded-md"
+                        style={{
+                          backgroundColor: isActive ? section.color : 'transparent',
+                          color: isActive ? 'white' : 'inherit',
+                        }}
+                      >
+                        <Icon className="h-4 w-4" />
+                      </div>
+                      <span className="flex-1">{section.label}</span>
+                      {isComplete && (
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      )}
                     </button>
                   );
                 })}
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </Panel>
+
+            <PanelResizeHandle className="py-0.5 border-t w-full bg-gray-50 cursor-ns-resize shrink-0 z-10 flex items-center justify-center relative group">
+              <div className="w-12 h-1 bg-border rounded-full group-hover:bg-primary/60 group-active:bg-primary transition-colors" />
+            </PanelResizeHandle>
+
+            <Panel defaultSize={60} minSize={20} className="flex flex-col border-t">
+              <div className="p-4 overflow-y-auto scrollbar-thin flex-1">
+                <ATSScore />
+                <div className="mt-4">
+                  <JobMatcher />
+                </div>
+                <div className="mt-4">
+                  <CoverLetterGenerator />
+                </div>
+                <div className="mt-4">
+                  <ResumeUpload />
+                </div>
+              </div>
+            </Panel>
+          </PanelGroup>
+        </aside>
 
         {/* Version History Sidebar */}
         <AnimatePresence>
@@ -1289,12 +1271,12 @@ const Editor = () => {
             ref={previewContainerRef}
             className="hidden lg:flex w-[50%] border-l bg-gradient-to-b from-muted/50 to-background flex-col shrink-0"
           >
-            <div className="h-14 border-b bg-card/95 backdrop-blur-sm flex items-center justify-between px-4 shrink-0">
+            <div className="h-14 border-b bg-card/95 backdrop-blur-sm flex items-center justify-between xl:px-4 px-3 shrink-0 gap-2">
               <div className="flex items-center gap-2">
                 <Eye className="h-4 w-4 text-primary" />
                 <span className="text-sm font-semibold">Live Preview</span>
                 {/* Minimal dropdown template selector */}
-                <div className="ml-3">
+                <div className="xl:ml-3">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <button className="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm bg-muted/60 hover:bg-muted transition border outline-none">
@@ -1318,25 +1300,23 @@ const Editor = () => {
                   </DropdownMenu>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <button
                   onClick={() => setZoom(Math.max(0.3, zoom - 0.1))}
-                  className="p-1.5 hover:bg-muted rounded-lg transition-colors"
                   title="Zoom Out"
                 >
                   <ZoomOut className="h-4 w-4" />
                 </button>
                 <button
                   onClick={handleFitToWidth}
-                  className="px-2 py-1.5 text-xs hover:bg-muted rounded-lg transition-colors font-medium"
+                  className="text-xs font-medium"
                   title="Fit to Width"
                 >
                   Fit
                 </button>
-                <span className="text-xs font-medium w-12 text-center">{Math.round(zoom * 100)}%</span>
+                <span className="text-xs font-medium text-center">{Math.round(zoom * 100)}%</span>
                 <button
                   onClick={() => setZoom(Math.min(1, zoom + 0.1))}
-                  className="p-1.5 hover:bg-muted rounded-lg transition-colors"
                   title="Zoom In"
                 >
                   <ZoomIn className="h-4 w-4" />

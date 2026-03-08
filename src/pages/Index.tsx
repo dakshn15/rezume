@@ -1086,7 +1086,7 @@ const Index = () => {
       </section>
 
       {/* Contact Section */}
-      <section id="contact" className="lg:py-16 py-10">
+      <section id="contact" className="lg:py-16 py-10 overflow-hidden">
 
         <div className="container mx-auto">
           {/* Section Header */}
