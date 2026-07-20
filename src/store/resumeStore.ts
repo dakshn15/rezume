@@ -361,12 +361,15 @@ export const useResumeStore = create<ResumeState>()(
           };
         }),
 
-        deleteResume: (id) => set((state) => ({
-          allResumes: state.allResumes.filter((r) => r.id !== id),
-          currentResume: state.currentResume.id === id
-            ? (state.allResumes[0] || { ...defaultResume, id: nanoid() })
-            : state.currentResume,
-        })),
+        deleteResume: (id) => set((state) => {
+          const remaining = state.allResumes.filter((r) => r.id !== id);
+          return {
+            allResumes: remaining,
+            currentResume: state.currentResume.id === id
+              ? (remaining[0] || { ...defaultResume, id: nanoid() })
+              : state.currentResume,
+          };
+        }),
 
         renameResume: (id, name) => set((state) => ({
           allResumes: state.allResumes.map((r) => (r.id === id ? { ...r, name } : r)),
@@ -384,11 +387,15 @@ export const useResumeStore = create<ResumeState>()(
           };
         }),
 
-        importResume: (resume) => set((state) => ({
-          currentResume: { ...resume, id: nanoid() },
-          allResumes: [...state.allResumes, { ...resume, id: nanoid() }],
-          history: { past: [], future: [] },
-        })),
+        importResume: (resume) => set((state) => {
+          const newId = nanoid();
+          const imported = { ...resume, id: newId };
+          return {
+            currentResume: imported,
+            allResumes: [...state.allResumes, imported],
+            history: { past: [], future: [] },
+          };
+        }),
 
         // History
         undo: () => set((state) => {

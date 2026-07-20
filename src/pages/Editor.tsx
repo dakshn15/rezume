@@ -3,7 +3,6 @@ import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useResumeStore } from '@/store/resumeStore';
 import { useSettingsStore } from '@/store/settingsStore';
-import api from '@/services/api';
 import { TemplateRenderer } from '@/components/templates/TemplateRenderer';
 import { CustomButton } from '@/components/ui/custom-button';
 import { CustomInput } from '@/components/ui/custom-input';
@@ -15,8 +14,7 @@ import { VersionHistory } from '@/components/editor/VersionHistory';
 import { ResumeUpload } from '@/components/dashboard/ResumeUpload';
 import { SummaryGenerator } from '@/components/editor/SummaryGenerator';
 import { ExperienceGenerator } from '@/components/editor/ExperienceGenerator';
-import { ProgressRing } from '@/components/ui/progress-ring';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { calculateCompletionPercentage } from '@/utils/helpers';
 import { exportToPDF } from '@/utils/pdfExport';
@@ -24,12 +22,12 @@ import { sampleResumes } from '@/data/sampleResumes';
 import { defaultResume } from '@/data/resumeModel';
 import { nanoid } from 'nanoid';
 import {
-  ArrowLeft, Download, Save, User, FileText, Briefcase,
+  ArrowLeft, Download, User, FileText, Briefcase,
   GraduationCap, Wrench, FolderGit2, Plus, Trash2, Eye,
-  Undo2, Redo2, Award, Heart, Palette, Type, ChevronDown,
+  Undo2, Redo2, Award, Heart, Palette, ChevronDown,
   Check, RotateCcw, ZoomIn, ZoomOut, X, Sparkles,
   Mail, Phone, MapPin, Linkedin, Github, Globe, Calendar,
-  Building2, CheckCircle2, Circle, Menu, Settings2, Clock, LogOut
+  Building2, CheckCircle2, Circle, Menu, Clock, LogOut
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -37,8 +35,6 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { templateInfo } from '@/components/templates/TemplateRenderer';
 import { useAuthStore } from '@/store/authStore';
@@ -102,6 +98,7 @@ const Editor = () => {
   const { exportSettings, templateSettings, updateTemplateSettings } = useSettingsStore();
   const previewRef = useRef<HTMLDivElement>(null);
   const previewContainerRef = useRef<HTMLDivElement>(null);
+  const samplesRef = useRef<HTMLDivElement>(null);
 
   // State management
   const [activeSection, setActiveSection] = useState('personal');
@@ -153,16 +150,20 @@ const Editor = () => {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canUndo, canRedo, undo, redo]);
 
-  // Auto-save
+  // Auto-save with stable reference
+  const saveResumeRef = useRef(saveResume);
+  saveResumeRef.current = saveResume;
+
   useEffect(() => {
     setIsSaved(false);
     const timer = setTimeout(() => {
-      saveResume(currentResume).then(() => setIsSaved(true));
+      saveResumeRef.current(currentResume).then(() => setIsSaved(true));
     }, 2000);
     return () => clearTimeout(timer);
-  }, [currentResume, saveResume]);
+  }, [currentResume]);
 
   // Auto-fit preview on mount
   useEffect(() => {
@@ -185,6 +186,18 @@ const Editor = () => {
       navigate('/editor', { replace: true });
     }
   }, [searchParams, setTemplate, navigate]);
+
+  // Click-outside handler for samples dropdown
+  useEffect(() => {
+    if (!showSamples) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (samplesRef.current && !samplesRef.current.contains(e.target as Node)) {
+        setShowSamples(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showSamples]);
 
   const handleExportPDF = async () => {
     if (!isAuthenticated()) {
@@ -341,7 +354,7 @@ const Editor = () => {
             </button>
           </div>
           {/* Samples */}
-          <div className="relative">
+          <div className="relative" ref={samplesRef}>
             <CustomButton
               variant="outline"
               size="sm"
@@ -447,6 +460,14 @@ const Editor = () => {
       </header>
 
       <div className="flex-1 flex overflow-hidden">
+        {/* Mobile Sidebar Overlay */}
+        {showMobileMenu && (
+          <div
+            className="fixed inset-0 bg-black/40 z-30 md:hidden"
+            onClick={() => setShowMobileMenu(false)}
+          />
+        )}
+
         {/* Left Sidebar - Sections */}
         <aside className={`md:static fixed left-0 bg-card border-r z-40 overflow-hidden h-[calc(100vh-64px)] flex xl:max-w-[350px] max-w-[290px] w-full flex-col shrink-0 transition-transform duration-300 ${showMobileMenu ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
           <div className="p-4 border-b shrink-0">

@@ -26,6 +26,20 @@ const Index = () => {
   const navigate = useNavigate();
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
+  const handleContactSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const name = formData.get('name');
+    const email = formData.get('email');
+    const message = formData.get('message');
+    if (!name || !email || !message) {
+      toast.error('Please fill out all required fields (Name, Email, and Message).');
+      return;
+    }
+    toast.success('Thank you for reaching out! We will respond shortly.');
+    e.currentTarget.reset();
+  };
+
   const features = [
     { icon: Zap, title: 'Lightning Fast', description: 'Build your resume in minutes with our intuitive editor' },
     { icon: Shield, title: 'ATS-Optimized', description: 'Templates designed to pass applicant tracking systems' },
@@ -392,7 +406,7 @@ const Index = () => {
               className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 max-w-4xl mx-auto"
             >
               {stats.map((stat, i) => (
-                <div className="group relative cursor-pointer">
+                <div key={i} className="group relative cursor-pointer">
                   {/* Glow effect */}
                   <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/20 to-accent/20 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-accent/10 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300" />
@@ -533,7 +547,7 @@ const Index = () => {
                       <h3 className="text-xl font-semibold mb-3">
                         {feature.title}
                       </h3>
-                      <p className="text-muted-foreground group-hover:text-black transition-colors duration-300">
+                      <p className="text-muted-foreground group-hover:text-foreground transition-colors duration-300">
                         {feature.description}
                       </p>
                     </div>
@@ -841,7 +855,7 @@ const Index = () => {
                       </motion.div>
                       {/* Quote */}
                       <div className="relative md:mb-6 mb-4">
-                        <p className="text-foreground leading-relaxed relative z-10 group-hover:text-black transition-colors duration-300">
+                        <p className="text-foreground leading-relaxed relative z-10 group-hover:text-foreground transition-colors duration-300">
                           {testimonial.text}
                         </p>
                       </div>
@@ -1176,14 +1190,14 @@ const Index = () => {
               className="glass flex-1 rounded-2xl xl:p-8 lg:p-6 p-4 border-border"
             >
               <h3 className="text-xl font-semibold lg:mb-4 mb-3">Send us a Message</h3>
-              <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
+              <form className="space-y-5" onSubmit={handleContactSubmit}>
                 <div className="grid sm:grid-cols-2 gap-4">
-                  <CustomInput label="Name" placeholder="Your name" />
-                  <CustomInput label="Email" type="email" placeholder="your@email.com" />
+                  <CustomInput name="name" label="Name *" placeholder="Your name" required />
+                  <CustomInput name="email" label="Email *" type="email" placeholder="your@email.com" required />
                 </div>
-                <CustomInput label="Subject" placeholder="How can we help?" />
-                <CustomTextarea label="Message" placeholder="Tell us about your question or feedback..." className="min-h-[120px] resize-none" />
-                <CustomButton variant="primary" className="w-full group">
+                <CustomInput name="subject" label="Subject" placeholder="How can we help?" />
+                <CustomTextarea name="message" label="Message *" placeholder="Tell us about your question or feedback..." className="min-h-[120px] resize-none" required />
+                <CustomButton type="submit" variant="primary" className="w-full group">
                   <Send className="h-4 w-4" />
                   Send Message
                   <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
@@ -1362,7 +1376,7 @@ const Index = () => {
             className="border-t border-white/10 pt-5 flex flex-col lg:flex-row lg:text-start text-center justify-between items-center gap-2"
           >
             <p className="text-white/60 text-sm">
-              © 2025 Rezumely. All rights reserved. Made with ❤️ for job seekers worldwide.
+              © {new Date().getFullYear()} Rezumely. All rights reserved. Made with ❤️ for job seekers worldwide.
             </p>
             <div className="flex flex-wrap items-center justify-center sm:gap-6 gap-y-2 gap-3 text-sm">
               <span className="flex items-center gap-2 text-white/70">

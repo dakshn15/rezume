@@ -116,7 +116,9 @@ export const exportToPDF = async (
       if (originalMinHeight) {
         element.style.minHeight = originalMinHeight;
       }
-    } catch { }
+    } catch {
+      // Ignore style restoration errors on crash
+    }
 
     throw error;
   }

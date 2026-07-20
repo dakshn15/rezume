@@ -4,7 +4,6 @@ import { Resume } from '@/data/resumeModel';
 import { TemplateRenderer } from '@/components/templates/TemplateRenderer';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import api from '@/services/api';
 
 export const PublicResume = () => {
     const { idOrSlug } = useParams();

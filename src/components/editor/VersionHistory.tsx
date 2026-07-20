@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useResumeStore } from '@/store/resumeStore';
 import { format } from 'date-fns';
 import { Clock, RotateCcw, Trash2, X } from 'lucide-react';
@@ -19,11 +19,7 @@ export const VersionHistory = ({ onClose }: { onClose: () => void }) => {
     const [versions, setVersions] = useState<Version[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        fetchVersions();
-    }, [currentResume.id]);
-
-    const fetchVersions = async (id?: string) => {
+    const fetchVersions = useCallback(async (id?: string) => {
         try {
             const resumeId = id || currentResume.id;
             const response = await api.get(`/versions/${resumeId}`);
@@ -33,7 +29,11 @@ export const VersionHistory = ({ onClose }: { onClose: () => void }) => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [currentResume.id]);
+
+    useEffect(() => {
+        fetchVersions();
+    }, [currentResume.id, fetchVersions]);
 
     const createVersion = async () => {
         try {

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useResumeStore } from '@/store/resumeStore';
 import { TemplateRenderer } from '@/components/templates/TemplateRenderer';
 import { Loader2 } from 'lucide-react';
 import { useSettingsStore } from '@/store/settingsStore';
