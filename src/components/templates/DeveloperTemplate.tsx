@@ -18,7 +18,7 @@ interface TemplateProps {
 }
 
 export const DeveloperTemplate: React.FC<TemplateProps> = ({ resume, settings }) => {
-    const { personalInfo, summary, experience, education, skills, projects } = resume;
+    const { personalInfo, summary, experience, education, skills, projects, additional } = resume;
     const merged = { fontFamily: '"JetBrains Mono", "Fira Code", monospace', fontSize: 'medium', primaryColor: '#10b981', ...(settings || {}) } as TemplateSettings;
     const fonts = getFontSize(merged.fontSize);
 
@@ -253,6 +253,30 @@ export const DeveloperTemplate: React.FC<TemplateProps> = ({ resume, settings })
                                             </div>
                                         </div>
                                     ))}
+                                </div>
+                            </section>
+                        )}
+
+                        {/* Certifications */}
+                        {additional?.certifications && additional.certifications.length > 0 && (
+                            <section>
+                                <h3 className="font-mono text-sm text-[#94a3b8] mb-4 uppercase tracking-widest border-b border-[#334155] pb-2">
+                                    {"<Certifications />"}
+                                </h3>
+
+                                <div className="space-y-3">
+                                    {additional.certifications.map((cert: any, idx: number) => {
+                                        const certName = typeof cert === 'string' ? cert : cert.name || '';
+                                        const certIssuer = typeof cert === 'object' && cert.issuer ? cert.issuer : '';
+                                        const certDate = typeof cert === 'object' && cert.date ? cert.date : '';
+                                        return (
+                                            <div key={idx} className="print-break-inside-avoid text-xs font-mono">
+                                                <div className="text-[#a3e635] font-bold">{certName}</div>
+                                                {certIssuer && <div className="text-[#94a3b8]">{certIssuer}</div>}
+                                                {certDate && <div className="text-[#64748b]">{certDate}</div>}
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </section>
                         )}

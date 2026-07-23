@@ -128,8 +128,38 @@ export const ExecutiveTemplate: React.FC<TemplateProps> = ({ resume, settings })
                     </section>
                 )}
 
+                {/* Projects */}
+                {projects && projects.length > 0 && (
+                    <section className="mb-10">
+                        <h3
+                            className="uppercase tracking-[0.15em] mb-6 text-center font-bold"
+                            style={{ fontSize: fonts.heading, color: merged.primaryColor }}
+                        >
+                            Key Strategic Projects
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-4">
+                            {projects.map((project) => (
+                                <div key={project.id} className="print-break-inside-avoid border-b border-[#e7e5e4] pb-4">
+                                    <div className="flex justify-between items-start mb-1">
+                                        <h4 className="font-bold text-[#1c1917]">{project.name}</h4>
+                                        {project.url && (
+                                            <a href={project.url} className="text-xs text-blue-600 hover:underline">Link↗</a>
+                                        )}
+                                    </div>
+                                    <p className="text-[#44403c] text-xs mb-2 leading-relaxed">{project.description}</p>
+                                    {project.technologies.length > 0 && (
+                                        <div className="font-sans text-[0.8em] text-[#78716c]">
+                                            {project.technologies.join(' • ')}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                )}
+
                 {/* Education & Credentials */}
-                {(education.length > 0 || additional.certifications.length > 0) && (
+                {(education.length > 0 || (additional?.certifications && additional.certifications.length > 0)) && (
                     <section>
                         <h3
                             className="uppercase tracking-[0.15em] mb-6 text-center font-bold"
@@ -150,17 +180,24 @@ export const ExecutiveTemplate: React.FC<TemplateProps> = ({ resume, settings })
                                 ))}
                             </div>
 
-                            {additional.certifications.length > 0 && (
+                            {additional?.certifications && additional.certifications.length > 0 && (
                                 <div>
-                                    {additional.certifications.map((cert) => (
-                                        <div key={cert.id} className="mb-4 print-break-inside-avoid">
-                                            <h4 className="font-bold text-[#1c1917]">{cert.name}</h4>
-                                            <div className="italic text-[#57534e] mb-1">{cert.issuer}</div>
-                                            <div className="font-sans text-[0.85em] text-[#78716c] tracking-wide uppercase">
-                                                {cert.date}
+                                    {additional.certifications.map((cert: any, idx: number) => {
+                                        const certName = typeof cert === 'string' ? cert : cert.name || '';
+                                        const certIssuer = typeof cert === 'object' && cert.issuer ? cert.issuer : '';
+                                        const certDate = typeof cert === 'object' && cert.date ? cert.date : '';
+                                        return (
+                                            <div key={idx} className="mb-4 print-break-inside-avoid">
+                                                <h4 className="font-bold text-[#1c1917]">{certName}</h4>
+                                                {certIssuer && <div className="italic text-[#57534e] mb-1">{certIssuer}</div>}
+                                                {certDate && (
+                                                    <div className="font-sans text-[0.85em] text-[#78716c] tracking-wide uppercase">
+                                                        {certDate}
+                                                    </div>
+                                                )}
                                             </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             )}
                         </div>

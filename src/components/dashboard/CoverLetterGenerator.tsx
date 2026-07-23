@@ -22,9 +22,28 @@ export const CoverLetterGenerator = () => {
 
         setLoading(true);
         try {
+            let resumeText = `Candidate Name: ${currentResume.personalInfo.name || 'Candidate'}\n`;
+            if (currentResume.personalInfo.title) resumeText += `Professional Title: ${currentResume.personalInfo.title}\n`;
+            if (currentResume.summary) resumeText += `Summary: ${currentResume.summary}\n`;
+            if (currentResume.experience?.length) {
+                resumeText += `Experience:\n`;
+                currentResume.experience.forEach(exp => {
+                    resumeText += `- ${exp.position} at ${exp.company} (${exp.startDate} to ${exp.current ? 'Present' : exp.endDate}): ${exp.description || ''} ${(exp.achievements || []).join('. ')}\n`;
+                });
+            }
+            if (currentResume.education?.length) {
+                resumeText += `Education:\n`;
+                currentResume.education.forEach(edu => {
+                    resumeText += `- ${edu.degree} in ${edu.field} at ${edu.institution}\n`;
+                });
+            }
+            if (currentResume.skills?.technical?.length) {
+                resumeText += `Technical Skills: ${currentResume.skills.technical.join(', ')}\n`;
+            }
+
             const response = await api.post('/ai/cover-letter', {
-                resumeText: JSON.stringify(currentResume), // Ideally, backend reconstructs text or we pass ID
-                resumeId: currentResume.id, // Better to pass ID
+                resumeText,
+                resumeId: currentResume.id,
                 jobDescription
             });
 

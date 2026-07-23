@@ -158,22 +158,32 @@ export const ModernTemplate: React.FC<TemplateProps> = ({ resume, settings }) =>
           )}
 
           {/* Certifications */}
-          {additional.certifications.length > 0 && (
+          {additional?.certifications && additional.certifications.length > 0 && (
             <div>
               <h3 className="font-semibold uppercase mb-3 text-white/90 pb-2" style={{ fontSize: fonts.section, borderBottom: '1px solid rgba(255,255,255,0.2)' }}>
                 Certifications
               </h3>
               <div>
-                {additional.certifications.map((cert) => (
-                  <div key={cert.id} style={{ marginBottom: '12px' }}>
-                    <div className="font-medium" style={{ fontSize: fonts.small }}>
-                      {cert.url ? (
-                        <LinkWrapper href={cert.url}>{cert.name}</LinkWrapper>
-                      ) : cert.name}
+                {additional.certifications.map((cert: any, idx: number) => {
+                  const certName = typeof cert === 'string' ? cert : cert?.name || '';
+                  const certIssuer = typeof cert === 'object' && cert?.issuer ? cert.issuer : '';
+                  const certDate = typeof cert === 'object' && cert?.date ? cert.date : '';
+                  const certUrl = typeof cert === 'object' && cert?.url ? cert.url : undefined;
+                  return (
+                    <div key={idx} style={{ marginBottom: '12px' }}>
+                      <div className="font-medium" style={{ fontSize: fonts.small }}>
+                        {certUrl ? (
+                          <LinkWrapper href={certUrl}>{certName}</LinkWrapper>
+                        ) : certName}
+                      </div>
+                      {(certIssuer || certDate) && (
+                        <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.6)' }}>
+                          {certIssuer}{certIssuer && certDate ? ' • ' : ''}{certDate}
+                        </div>
+                      )}
                     </div>
-                    <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.6)' }}>{cert.issuer} • {cert.date}</div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
@@ -217,7 +227,7 @@ export const ModernTemplate: React.FC<TemplateProps> = ({ resume, settings }) =>
                 </h3>
                 <div>
                   {experience.map((exp) => (
-                    <div key={exp.id} style={{ marginBottom: '16px' }}>
+                    <div key={exp.id} className="print-break-inside-avoid" style={{ marginBottom: '16px' }}>
                       <div className="flex justify-between items-start">
                         <div>
                           <h4 className="font-semibold text-gray-900">{exp.position}</h4>
@@ -254,7 +264,7 @@ export const ModernTemplate: React.FC<TemplateProps> = ({ resume, settings }) =>
                 </h3>
                 <div>
                   {education.map((edu) => (
-                    <div key={edu.id} style={{ marginBottom: '12px' }}>
+                    <div key={edu.id} className="print-break-inside-avoid" style={{ marginBottom: '12px' }}>
                       <div className="flex justify-between items-start">
                         <div>
                           <h4 className="font-semibold text-gray-900">{edu.degree} in {edu.field}</h4>

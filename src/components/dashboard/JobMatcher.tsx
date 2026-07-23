@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CustomButton } from '@/components/ui/custom-button';
-import { Textarea } from '@/components/ui/textarea';
+import { CustomTextarea } from '@/components/ui/custom-textarea';
 import { ProgressRing } from '@/components/ui/progress-ring';
-import { Loader2, Target, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { Loader2, Target, CheckCircle, AlertTriangle } from 'lucide-react';
 import { analyzeJobMatch } from '@/services/aiService';
 import { useResumeStore } from '@/store/resumeStore';
+import { toast } from 'sonner';
 
 export const JobMatcher: React.FC = () => {
     const { currentResume } = useResumeStore();
@@ -14,24 +15,34 @@ export const JobMatcher: React.FC = () => {
     const [result, setResult] = useState<any>(null);
 
     const handleAnalyze = async () => {
-        if (!jobDescription.trim()) return;
+        if (!jobDescription.trim()) {
+            toast.error('Please enter a job description to analyze.');
+            return;
+        }
 
         setIsAnalyzing(true);
         setResult(null);
 
         try {
-            // Construct resume text
-            let resumeText = `${currentResume.personalInfo.name || ''} \n`;
-            resumeText += `${currentResume.summary || ''} \n`;
+            // Construct detailed resume text for analysis
+            let resumeText = `${currentResume.personalInfo.name || ''} ${currentResume.personalInfo.title || ''}\n`;
+            if (currentResume.summary) resumeText += `${currentResume.summary}\n`;
             (currentResume.experience || []).forEach((exp) => {
-                resumeText += `${exp.position} at ${exp.company} ${exp.description} ${exp.achievements.join(' ')} \n`;
+                resumeText += `${exp.position || ''} at ${exp.company || ''}: ${exp.description || ''} ${(exp.achievements || []).join(' ')}\n`;
             });
-            (currentResume.skills.technical || []).forEach((s) => resumeText += `${s}, `);
+            (currentResume.education || []).forEach((edu) => {
+                resumeText += `${edu.degree || ''} in ${edu.field || ''} at ${edu.institution || ''}\n`;
+            });
+            if (currentResume.skills?.technical?.length) {
+                resumeText += `Skills: ${currentResume.skills.technical.join(', ')}\n`;
+            }
 
             const analysis = await analyzeJobMatch(resumeText, jobDescription);
             setResult(analysis);
+            toast.success('Job match analysis complete!');
         } catch (error) {
-            console.error(error);
+            console.error('Job Match Analysis Error:', error);
+            toast.error('Failed to analyze job match. Please try again.');
         } finally {
             setIsAnalyzing(false);
         }
@@ -54,7 +65,7 @@ export const JobMatcher: React.FC = () => {
             <CardContent className="flex-1 overflow-y-auto space-y-4">
                 <div className="space-y-2">
                     <label className="text-sm font-medium text-muted-foreground">Paste Job Description</label>
-                    <Textarea
+                    <CustomTextarea
                         placeholder="Paste the job description here..."
                         className="min-h-[120px] text-xs resize-none"
                         value={jobDescription}

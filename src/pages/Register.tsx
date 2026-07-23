@@ -102,7 +102,7 @@ const Register = () => {
                     </div>
 
                     <div className="mb-8">
-                        <h2 className="text-2xl font-bold text-slate-900">Create your account</h2>
+                        <h2 className="sm:text-2xl text-xl font-bold text-slate-900">Create your account</h2>
                         <p className="text-slate-500 mt-1">Free forever. No credit card required.</p>
                     </div>
 

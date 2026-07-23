@@ -21,7 +21,7 @@ export const RoleLandingPage = () => {
                     <title>Resume Template Not Found | Rezumely</title>
                     <meta name="robots" content="noindex" />
                 </Helmet>
-                <h1 className="text-2xl font-bold mb-4">Template Not Found</h1>
+                <h1 className="sm:text-2xl text-xl font-bold mb-4">Template Not Found</h1>
                 <Button onClick={() => navigate('/')}>Go Home</Button>
             </div>
         );

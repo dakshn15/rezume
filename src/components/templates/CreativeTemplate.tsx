@@ -228,19 +228,26 @@ export const CreativeTemplate: React.FC<TemplateProps> = ({ resume, settings }) 
             )}
 
             {/* Certifications */}
-            {additional.certifications.length > 0 && (
+            {additional?.certifications && additional.certifications.length > 0 && (
               <div>
                 <h3 className="text-sm font-bold uppercase  mb-3 flex items-center gap-2" style={{ color: merged.primaryColor }}>
                   <span className="w-4 h-0.5" style={{ backgroundColor: merged.accentColor }} />
                   Certifications
                 </h3>
                 <div className="space-y-2">
-                  {additional.certifications.map((cert) => (
-                    <div key={cert.id} className="text-[9px]">
-                      <div className="font-medium text-gray-900">{cert.name}</div>
-                      <div className="text-gray-500">{cert.issuer} • {cert.date}</div>
-                    </div>
-                  ))}
+                  {additional.certifications.map((cert: any, idx: number) => {
+                    const certName = typeof cert === 'string' ? cert : cert?.name || '';
+                    const certIssuer = typeof cert === 'object' && cert?.issuer ? cert.issuer : '';
+                    const certDate = typeof cert === 'object' && cert?.date ? cert.date : '';
+                    return (
+                      <div key={idx} className="text-[9px]">
+                        <div className="font-medium text-gray-900">{certName}</div>
+                        {(certIssuer || certDate) && (
+                          <div className="text-gray-500">{certIssuer}{certIssuer && certDate ? ' • ' : ''}{certDate}</div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}

@@ -54,7 +54,7 @@ export const PublicResume = () => {
     if (error || !resume) {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen text-center p-4">
-                <h1 className="text-2xl font-bold mb-2">Oops!</h1>
+                <h1 className="sm:text-2xl text-xl font-bold mb-2">Oops!</h1>
                 <p className="text-muted-foreground mb-4">{error || 'Something went wrong.'}</p>
                 <Button onClick={() => window.location.href = '/'}>Go Home</Button>
             </div>

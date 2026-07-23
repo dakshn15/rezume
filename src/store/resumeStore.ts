@@ -446,8 +446,10 @@ export const useResumeStore = create<ResumeState>()(
             }));
 
             set({ allResumes: parsedResumes });
-          } catch (error) {
-            console.error('Failed to fetch resumes:', error);
+          } catch (error: any) {
+            if (error.response?.status !== 401 && error.response?.status !== 403) {
+              console.error('Failed to fetch resumes:', error);
+            }
           }
         },
 
@@ -500,8 +502,10 @@ export const useResumeStore = create<ResumeState>()(
               });
             }
 
-          } catch (error) {
-            console.error('Failed to save resume:', error);
+          } catch (error: any) {
+            if (error.response?.status !== 401 && error.response?.status !== 403) {
+              console.error('Failed to save resume:', error);
+            }
             set({ isSaving: false });
           }
         },

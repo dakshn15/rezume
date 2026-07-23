@@ -212,12 +212,15 @@ export const ProfessionalTemplate: React.FC<TemplateProps> = ({ resume, settings
                             Key Projects
                         </h3>
                         <div className="grid grid-cols-2 gap-5">
-                            {projects.slice(0, 4).map((project) => (
+                            {projects.map((project) => (
                                 <div key={project.id} className="print-break-inside-avoid bg-gray-50 p-3 rounded border border-gray-100">
                                     <div className="flex justify-between items-start mb-1">
                                         <h4 className="font-bold text-gray-900">{project.name}</h4>
+                                        {project.url && (
+                                            <a href={project.url} className="text-xs text-blue-600 hover:underline">Link↗</a>
+                                        )}
                                     </div>
-                                    <p className="text-xs text-gray-700 mb-2 line-clamp-3">{project.description}</p>
+                                    <p className="text-xs text-gray-700 mb-2">{project.description}</p>
                                     {project.technologies.length > 0 && (
                                         <div className="text-[10px] font-medium text-gray-500 truncate">
                                             {project.technologies.join(' • ')}
@@ -225,6 +228,65 @@ export const ProfessionalTemplate: React.FC<TemplateProps> = ({ resume, settings
                                     )}
                                 </div>
                             ))}
+                        </div>
+                    </section>
+                )}
+
+                {/* Additional Details (Certifications, Awards, Volunteer, Hobbies) */}
+                {((additional?.certifications && additional.certifications.length > 0) ||
+                  (additional?.awards && additional.awards.length > 0) ||
+                  (additional?.volunteer && additional.volunteer.length > 0) ||
+                  (additional?.hobbies && additional.hobbies.length > 0)) && (
+                    <section>
+                        <h3
+                            className="uppercase font-bold tracking-widest mb-4 pb-1 border-b"
+                            style={{ fontSize: fonts.heading, color: merged.primaryColor, borderColor: `${merged.primaryColor}30` }}
+                        >
+                            Certifications & Additional Details
+                        </h3>
+                        <div className="grid grid-cols-2 gap-6">
+                            {additional.certifications && additional.certifications.length > 0 && (
+                                <div>
+                                    <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Certifications</div>
+                                    <ul className="space-y-1.5 text-sm text-gray-700">
+                                        {additional.certifications.map((cert: any, i: number) => {
+                                            const name = typeof cert === 'string' ? cert : cert.name || '';
+                                            const issuer = typeof cert === 'object' && cert.issuer ? ` - ${cert.issuer}` : '';
+                                            const date = typeof cert === 'object' && cert.date ? ` (${cert.date})` : '';
+                                            return <li key={i} className="flex items-center gap-1.5"><span style={{ color: merged.primaryColor }}>•</span> {name}{issuer}{date}</li>;
+                                        })}
+                                    </ul>
+                                </div>
+                            )}
+
+                            {additional.awards && additional.awards.length > 0 && (
+                                <div>
+                                    <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Honors & Awards</div>
+                                    <ul className="space-y-1.5 text-sm text-gray-700">
+                                        {additional.awards.map((award: string, i: number) => (
+                                            <li key={i} className="flex items-center gap-1.5"><span style={{ color: merged.primaryColor }}>•</span> {award}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+
+                            {additional.volunteer && additional.volunteer.length > 0 && (
+                                <div>
+                                    <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Volunteer Work</div>
+                                    <ul className="space-y-1.5 text-sm text-gray-700">
+                                        {additional.volunteer.map((vol: string, i: number) => (
+                                            <li key={i} className="flex items-center gap-1.5"><span style={{ color: merged.primaryColor }}>•</span> {vol}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+
+                            {additional.hobbies && additional.hobbies.length > 0 && (
+                                <div>
+                                    <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Interests</div>
+                                    <div className="text-sm text-gray-700">{additional.hobbies.join(', ')}</div>
+                                </div>
+                            )}
                         </div>
                     </section>
                 )}

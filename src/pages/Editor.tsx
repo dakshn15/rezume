@@ -1,140 +1,103 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Link, useSearchParams, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { useSearchParams, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { useResumeStore } from '@/store/resumeStore';
 import { useSettingsStore } from '@/store/settingsStore';
+import { useAuthStore } from '@/store/authStore';
 import { TemplateRenderer } from '@/components/templates/TemplateRenderer';
+import { EditorStepper, EditorStep, EDITOR_STEPS } from '@/components/editor/EditorStepper';
+import { ContentStep } from '@/components/editor/ContentStep';
+import { AIToolsStep } from '@/components/editor/AIToolsStep';
+import { CustomizeStep } from '@/components/editor/CustomizeStep';
+import { FinalizeStep } from '@/components/editor/FinalizeStep';
 import { CustomButton } from '@/components/ui/custom-button';
-import { CustomInput } from '@/components/ui/custom-input';
-import { CustomTextarea } from '@/components/ui/custom-textarea';
-import { ATSScore } from '@/components/editor/ATSScore';
-import { JobMatcher } from '@/components/dashboard/JobMatcher';
-import { CoverLetterGenerator } from '@/components/dashboard/CoverLetterGenerator';
-import { VersionHistory } from '@/components/editor/VersionHistory';
-import { ResumeUpload } from '@/components/dashboard/ResumeUpload';
-import { SummaryGenerator } from '@/components/editor/SummaryGenerator';
-import { ExperienceGenerator } from '@/components/editor/ExperienceGenerator';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { calculateCompletionPercentage } from '@/utils/helpers';
-import { exportToPDF } from '@/utils/pdfExport';
-import { sampleResumes } from '@/data/sampleResumes';
-import { defaultResume } from '@/data/resumeModel';
-import { nanoid } from 'nanoid';
-import {
-  ArrowLeft, Download, User, FileText, Briefcase,
-  GraduationCap, Wrench, FolderGit2, Plus, Trash2, Eye,
-  Undo2, Redo2, Award, Heart, Palette, ChevronDown,
-  Check, RotateCcw, ZoomIn, ZoomOut, X, Sparkles,
-  Mail, Phone, MapPin, Linkedin, Github, Globe, Calendar,
-  Building2, CheckCircle2, Circle, Menu, Clock, LogOut
-} from 'lucide-react';
 import { toast } from 'sonner';
 import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from '@/components/ui/dropdown-menu';
-import { templateInfo } from '@/components/templates/TemplateRenderer';
-import { useAuthStore } from '@/store/authStore';
-import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+  FileText, ArrowLeft, Save, Loader2, Eye, EyeOff, X,
+  ZoomIn, ZoomOut, Maximize2, Minimize2, Pencil
+} from 'lucide-react';
 
-const Editor = () => {
+// A4 size in pixels at 96 DPI
+const A4_WIDTH_PX = 794;
+const A4_HEIGHT_PX = 1123;
+
+export type ViewMode = 'fit-page' | 'fit-width' | 'custom';
+
+const Editor: React.FC = () => {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const logout = useAuthStore((state) => state.logout);
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const currentResumeRaw = useResumeStore((state) => state.currentResume);
-  const currentResume = React.useMemo(() => {
-    return {
-      ...defaultResume,
-      ...currentResumeRaw,
-      personalInfo: {
-        ...defaultResume.personalInfo,
-        ...(currentResumeRaw?.personalInfo || {})
-      },
-      skills: {
-        ...defaultResume.skills,
-        ...(currentResumeRaw?.skills || {})
-      },
-      experience: currentResumeRaw?.experience || [],
-      education: currentResumeRaw?.education || [],
-      projects: currentResumeRaw?.projects || [],
-      additional: {
-        ...defaultResume.additional,
-        ...(currentResumeRaw?.additional || {})
-      }
-    };
-  }, [currentResumeRaw]);
 
-  const {
-    updatePersonalInfo,
-    updateSummary,
-    addExperience,
-    updateExperience,
-    deleteExperience,
-    addEducation,
-    updateEducation,
-    deleteEducation,
-    updateSkills,
-    addProject,
-    updateProject,
-    deleteProject,
-    setCurrentResume,
-    addCertification,
-    updateCertification,
-    deleteCertification,
-    updateAdditional,
-    undo,
-    redo,
-    canUndo,
-    canRedo,
-    setTemplate,
-    saveResume,
-    fetchResumes
-  } = useResumeStore();
+  // Stores
+  const { currentResume, setTemplate, saveResume, renameResume, isSaving, undo, redo, canUndo, canRedo } =
+    useResumeStore();
+  const { templateSettings } = useSettingsStore();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
-  const { exportSettings, templateSettings, updateTemplateSettings } = useSettingsStore();
+  // Title state
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [titleText, setTitleText] = useState(currentResume.name || 'Untitled Resume');
+
+  useEffect(() => {
+    setTitleText(currentResume.name || 'Untitled Resume');
+  }, [currentResume.name]);
+
+  const handleSaveTitle = () => {
+    setIsEditingTitle(false);
+    const trimmed = titleText.trim() || 'Untitled Resume';
+    setTitleText(trimmed);
+    renameResume(currentResume.id, trimmed);
+  };
+
+  // Step state
+  const [activeStep, setActiveStep] = useState<EditorStep>('content');
+  const [completedSteps, setCompletedSteps] = useState<Set<EditorStep>>(new Set());
+
+  // Preview & View Controls
   const previewRef = useRef<HTMLDivElement>(null);
   const previewContainerRef = useRef<HTMLDivElement>(null);
-  const samplesRef = useRef<HTMLDivElement>(null);
+  const [previewScale, setPreviewScale] = useState(0.5);
+  const [viewMode, setViewMode] = useState<ViewMode>('fit-page');
+  const [showMobilePreview, setShowMobilePreview] = useState(false);
 
-  // State management
-  const [activeSection, setActiveSection] = useState('personal');
-  const [isExporting, setIsExporting] = useState(false);
-  const [isSaved, setIsSaved] = useState(true);
-  const [showStylePanel, setShowStylePanel] = useState(false);
-  const [zoom, setZoom] = useState(0.6);
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const [showVersionHistory, setShowVersionHistory] = useState(false);
-  const [showSamples, setShowSamples] = useState(false);
-
-  // Calculate fit-to-width zoom
-  const calculateFitZoom = () => {
-    const resumeWidth = 794; // 210mm in pixels at 96dpi
-    if (!previewContainerRef.current) {
-      // Fallback calculation
-      const containerWidth = 600;
-      const padding = 64; // px-4 xl:px-8 = 16px + 32px = 48px each side
-      const availableWidth = containerWidth - padding;
-      return Math.min(0.85, (availableWidth / resumeWidth) * 0.9);
+  // Apply template from URL params on mount
+  useEffect(() => {
+    const templateId = searchParams.get('template');
+    if (templateId) {
+      setTemplate(templateId);
     }
-    const containerWidth = previewContainerRef.current.offsetWidth;
-    const padding = 64; // Account for horizontal padding
-    const availableWidth = containerWidth - padding;
-    return Math.min(0.85, (availableWidth / resumeWidth) * 0.9);
-  };
+  }, [searchParams, setTemplate]);
 
-  const handleFitToWidth = () => {
-    setZoom(calculateFitZoom());
-  };
+  // Compute scale based on container bounds and selected view mode
+  const computeScale = useCallback(() => {
+    if (!previewContainerRef.current) return;
 
-  const completion = calculateCompletionPercentage(currentResume);
+    const containerWidth = previewContainerRef.current.clientWidth;
+    const containerHeight = previewContainerRef.current.clientHeight - 40; // Subtract preview header height
+    const paddingX = 32; // 16px padding on left & right
+    const paddingY = 32; // 16px padding on top & bottom
+
+    const availWidth = Math.max(100, containerWidth - paddingX);
+    const availHeight = Math.max(100, containerHeight - paddingY);
+
+    if (viewMode === 'fit-page') {
+      const scaleW = availWidth / A4_WIDTH_PX;
+      const scaleH = availHeight / A4_HEIGHT_PX;
+      const fitPageScale = Math.min(scaleW, scaleH);
+      setPreviewScale(Math.max(0.2, Math.min(0.9, fitPageScale)));
+    } else if (viewMode === 'fit-width') {
+      const fitWidthScale = availWidth / A4_WIDTH_PX;
+      setPreviewScale(Math.max(0.25, Math.min(1.1, fitWidthScale)));
+    }
+  }, [viewMode]);
+
+  useEffect(() => {
+    computeScale();
+    window.addEventListener('resize', computeScale);
+    return () => window.removeEventListener('resize', computeScale);
+  }, [computeScale]);
 
   // Keyboard shortcuts
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+    const handleKeyboard = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
         e.preventDefault();
         if (canUndo()) undo();
@@ -148,1228 +111,298 @@ const Editor = () => {
         handleSave();
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    window.addEventListener('keydown', handleKeyboard);
+    return () => window.removeEventListener('keydown', handleKeyboard);
   }, [canUndo, canRedo, undo, redo]);
 
-  // Auto-save with stable reference
-  const saveResumeRef = useRef(saveResume);
-  saveResumeRef.current = saveResume;
-
-  useEffect(() => {
-    setIsSaved(false);
-    const timer = setTimeout(() => {
-      saveResumeRef.current(currentResume).then(() => setIsSaved(true));
-    }, 2000);
-    return () => clearTimeout(timer);
-  }, [currentResume]);
-
-  // Auto-fit preview on mount
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setZoom(calculateFitZoom());
-    }, 200);
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    fetchResumes();
-  }, [fetchResumes]);
-
-  // Apply template from URL parameter
-  useEffect(() => {
-    const templateParam = searchParams.get('template');
-    if (templateParam && templateInfo.some(t => t.id === templateParam)) {
-      setTemplate(templateParam);
-      // Clean up URL by removing the template parameter
-      navigate('/editor', { replace: true });
+  // Step navigation
+  const goToStep = (step: EditorStep) => {
+    const currentIndex = EDITOR_STEPS.findIndex((s) => s.id === activeStep);
+    const targetIndex = EDITOR_STEPS.findIndex((s) => s.id === step);
+    if (targetIndex > currentIndex) {
+      setCompletedSteps((prev) => new Set([...prev, activeStep]));
     }
-  }, [searchParams, setTemplate, navigate]);
+    setActiveStep(step);
+  };
 
-  // Click-outside handler for samples dropdown
-  useEffect(() => {
-    if (!showSamples) return;
-    const handleClickOutside = (e: MouseEvent) => {
-      if (samplesRef.current && !samplesRef.current.contains(e.target as Node)) {
-        setShowSamples(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showSamples]);
-
-  const handleExportPDF = async () => {
-    if (!isAuthenticated()) {
-      toast.error('Please create an account to download your resume!');
-      navigate('/register');
-      return;
+  const goNext = () => {
+    const currentIndex = EDITOR_STEPS.findIndex((s) => s.id === activeStep);
+    if (currentIndex < EDITOR_STEPS.length - 1) {
+      goToStep(EDITOR_STEPS[currentIndex + 1].id);
     }
+  };
 
-    setIsExporting(true);
-    try {
-      if (!previewRef.current) {
-        throw new Error("Preview element not found");
-      }
-
-      toast.info("Generating PDF, please wait...");
-
-      await exportToPDF(
-        previewRef.current,
-        `${currentResume.personalInfo.name || 'resume'}.pdf`,
-        exportSettings,
-        (progress) => {
-          if (progress.status === 'error') {
-            toast.error(progress.message);
-          } else if (progress.status === 'complete') {
-            toast.success("PDF generated successfully!");
-          }
-        }
-      );
-    } catch (error) {
-      console.error('Export failed:', error);
-      toast.error("Failed to generate PDF. Please try again.");
-    } finally {
-      setIsExporting(false);
+  const goPrev = () => {
+    const currentIndex = EDITOR_STEPS.findIndex((s) => s.id === activeStep);
+    if (currentIndex > 0) {
+      goToStep(EDITOR_STEPS[currentIndex - 1].id);
     }
+  };
+
+  const [activeContentSection, setActiveContentSection] = useState<string>('personal');
+
+  const navigateToSection = (sectionId: string) => {
+    if (sectionId) {
+      setActiveContentSection(sectionId);
+    }
+    setActiveStep('content');
   };
 
   const handleSave = async () => {
     if (!isAuthenticated()) {
-      toast.error('Please create an account to save your resume to the cloud!');
-      navigate('/register');
+      toast.info('Login to save your resume to the cloud.');
       return;
     }
-    await saveResume(currentResume);
-    setIsSaved(true);
-  };
-
-  const loadSample = (index: number) => {
-    setCurrentResume(sampleResumes[index]);
-    setShowSamples(false);
-  };
-
-  const resetResume = () => {
-    setCurrentResume({ ...defaultResume, id: nanoid() });
-    setShowSamples(false);
-  };
-
-  // Section configuration
-  const sections = [
-    { id: 'personal', label: 'Personal', icon: User, color: '#3b82f6' },
-    { id: 'summary', label: 'Summary', icon: FileText, color: '#8b5cf6' },
-    { id: 'experience', label: 'Experience', icon: Briefcase, color: '#10b981' },
-    { id: 'education', label: 'Education', icon: GraduationCap, color: '#f59e0b' },
-    { id: 'skills', label: 'Skills', icon: Wrench, color: '#ec4899' },
-    { id: 'projects', label: 'Projects', icon: FolderGit2, color: '#6366f1' },
-    { id: 'certifications', label: 'Certifications', icon: Award, color: '#eab308' },
-    { id: 'additional', label: 'Additional', icon: Heart, color: '#ef4444' },
-  ];
-
-  const colorPresets = [
-    { name: 'Navy', primary: '#1e3a5f', accent: '#3b82f6' },
-    { name: 'Green', primary: '#14532d', accent: '#22c55e' },
-    { name: 'Purple', primary: '#4c1d95', accent: '#8b5cf6' },
-    { name: 'Red', primary: '#7f1d1d', accent: '#ef4444' },
-    { name: 'Gray', primary: '#1f2937', accent: '#6b7280' },
-    { name: 'Teal', primary: '#134e4a', accent: '#14b8a6' },
-  ];
-
-  const fontOptions = [
-    { name: 'Inter', value: 'Inter, sans-serif' },
-    { name: 'Source Serif', value: 'Source Serif 4, serif' },
-    { name: 'Playfair', value: 'Playfair Display, serif' },
-    { name: 'Mono', value: 'JetBrains Mono, monospace' },
-  ];
-
-  const getSectionStatus = (sectionId: string) => {
-    switch (sectionId) {
-      case 'personal':
-        return currentResume.personalInfo?.name && currentResume.personalInfo?.email;
-      case 'summary':
-        return !!currentResume.summary;
-      case 'experience':
-        return (currentResume.experience || []).length > 0;
-      case 'education':
-        return (currentResume.education || []).length > 0;
-      case 'skills':
-        return (currentResume.skills?.technical || []).length > 0;
-      case 'projects':
-        return (currentResume.projects || []).length > 0;
-      case 'certifications':
-        return (currentResume.additional?.certifications || []).length > 0;
-      case 'additional':
-        return (currentResume.additional?.awards || []).length > 0 ||
-          (currentResume.additional?.volunteer || []).length > 0 ||
-          (currentResume.additional?.hobbies || []).length > 0;
-      default:
-        return false;
+    try {
+      await saveResume(currentResume);
+      toast.success('Resume saved!');
+    } catch {
+      toast.error('Failed to save.');
     }
+  };
+
+  const handleZoomIn = () => {
+    setViewMode('custom');
+    setPreviewScale((prev) => Math.min(1.2, prev + 0.05));
+  };
+
+  const handleZoomOut = () => {
+    setViewMode('custom');
+    setPreviewScale((prev) => Math.max(0.25, prev - 0.05));
   };
 
   return (
-    <div className="h-screen flex flex-col bg-background overflow-hidden">
-      {/* Top Navigation Bar */}
-      <header className="h-16 border-b bg-card/80 backdrop-blur-sm flex items-center justify-between px-4 md:px-6 shrink-0 z-50">
-        <div className="flex items-center gap-4">
-          <Link to="/">
-            <ArrowLeft className="h-5 w-5" />
+    <div className="h-screen flex flex-col bg-background overflow-hidden select-none">
+      <Helmet>
+        <title>
+          {currentResume.personalInfo?.name
+            ? `${currentResume.personalInfo.name} — Editor | Rezumely`
+            : 'Resume Editor | Rezumely'}
+        </title>
+      </Helmet>
+
+      {/* ========== TOP BAR ========== */}
+      <header className="py-2 border-b bg-card/95 backdrop-blur-sm flex flex-wrap items-center justify-between px-2 sm:px-4 shrink-0 z-20 gap-2 overflow-hidden">
+        {/* Left */}
+        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 min-w-0">
+          <Link
+            to="/templates"
+            className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors text-xs sm:text-sm font-medium shrink-0"
+            title="Choose Template"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span className="hidden md:inline">Templates</span>
           </Link>
-          <div className="hidden md:block">
-            <h1 className="font-bold text-lg">Resume Editor</h1>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              {isSaved ? (
-                <>
-                  <CheckCircle2 className="h-3 w-3 text-green-500" />
-                  <span>Saved</span>
-                </>
-              ) : (
-                <>
-                  <Circle className="h-3 w-3 text-yellow-500 animate-pulse" />
-                  <span>Saving...</span>
-                </>
-              )}
+          <div className="hidden md:block h-4 w-px bg-border shrink-0" />
+          <div className="flex items-center gap-1.5 min-w-0">
+            <div className="w-7 h-7 rounded-md bg-gradient-primary flex items-center justify-center shrink-0">
+              <FileText className="h-3.5 w-3.5 text-primary-foreground" />
             </div>
+            {isEditingTitle ? (
+              <input
+                type="text"
+                value={titleText}
+                onChange={(e) => setTitleText(e.target.value)}
+                onBlur={handleSaveTitle}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleSaveTitle();
+                  if (e.key === 'Escape') {
+                    setTitleText(currentResume.name || 'Untitled Resume');
+                    setIsEditingTitle(false);
+                  }
+                }}
+                autoFocus
+                className="text-xs sm:text-sm font-semibold bg-muted px-2 py-0.5 rounded border border-primary outline-none max-w-[120px] sm:max-w-[160px] md:max-w-[200px]"
+              />
+            ) : (
+              <button
+                onClick={() => setIsEditingTitle(true)}
+                title="Click to title/rename your resume"
+                className="flex items-center gap-1 text-xs sm:text-sm font-semibold hover:bg-muted/70 rounded transition-colors group text-left min-w-0"
+              >
+                <span className="truncate max-w-[90px] sm:max-w-[140px] md:max-w-[180px]">
+                  {currentResume.name || 'Untitled Resume'}
+                </span>
+                <Pencil className="h-3 w-3 text-muted-foreground opacity-50 group-hover:opacity-100 shrink-0 transition-opacity" />
+              </button>
+            )}
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* Undo/Redo */}
-          <div className="hidden sm:flex items-center gap-1 border-r pr-2 me-2">
-            <button
-              onClick={() => canUndo() && undo()}
-              disabled={!canUndo()}
-              className="p-2 hover:bg-muted rounded-lg transition-colors disabled:opacity-50"
-              title="Undo (Ctrl+Z)"
-            >
-              <Undo2 className="h-4 w-4" />
-            </button>
-            <button
-              onClick={() => canRedo() && redo()}
-              disabled={!canRedo()}
-              className="p-2 hover:bg-muted rounded-lg transition-colors disabled:opacity-50"
-              title="Redo (Ctrl+Y)"
-            >
-              <Redo2 className="h-4 w-4" />
-            </button>
-          </div>
-          {/* Samples */}
-          <div className="relative" ref={samplesRef}>
+        {/* Center — Stepper */}
+        <div className="flex justify-center min-w-0 px-1">
+          <EditorStepper
+            activeStep={activeStep}
+            onStepChange={goToStep}
+            completedSteps={completedSteps}
+          />
+        </div>
+
+        {/* Right */}
+        <div className="sm:flex hidden items-center gap-1.5 sm:gap-2 shrink-0">
+
+          {isAuthenticated() && (
             <CustomButton
               variant="outline"
               size="sm"
-              onClick={() => setShowSamples(!showSamples)}
-              className="gap-2 sm:px-3 sm:py-2.5 p-2"
+              onClick={handleSave}
+              disabled={isSaving}
+              className="gap-1.5 flex h-8 px-2.5 text-xs shrink-0"
             >
-              <Sparkles className="h-4 w-4" />
-              <span className="hidden sm:inline">Samples</span>
-            </CustomButton>
-            <AnimatePresence>
-              {showSamples && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="absolute start-0 top-full mt-2 bg-card border rounded-lg shadow-lg py-2 w-56 z-50"
-                >
-                  {sampleResumes.map((sample, i) => (
-                    <button
-                      key={i}
-                      onClick={() => loadSample(i)}
-                      className="w-full text-left px-4 py-2 text-sm hover:bg-muted transition-colors"
-                    >
-                      {sample.personalInfo.name}
-                    </button>
-                  ))}
-                  <Separator className="my-1" />
-                  <button
-                    onClick={resetResume}
-                    className="w-full text-left px-4 py-2 text-sm hover:bg-muted transition-colors text-muted-foreground"
-                  >
-                    <RotateCcw className="h-4 w-4 inline mr-2" />
-                    Reset
-                  </button>
-                </motion.div>
+              {isSaving ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Save className="h-3.5 w-3.5" />
               )}
-            </AnimatePresence>
-          </div>
-
-          {/* Style Toggle */}
-          <CustomButton
-            variant={showStylePanel ? "default" : "outline"}
-            size="sm"
-            className="sm:px-3 sm:py-2.5 p-2"
-            onClick={() => setShowStylePanel(!showStylePanel)}
-          >
-            <Palette className="h-4 w-4" />
-          </CustomButton>
-
-          {/* Version History (Auth Required) */}
-          {isAuthenticated() && (
-            <CustomButton
-              variant={showVersionHistory ? "default" : "outline"}
-              size="sm"
-              className="sm:px-3 sm:py-2.5 p-2"
-              onClick={() => setShowVersionHistory(!showVersionHistory)}
-              title="Version History"
-            >
-              <Clock className="h-4 w-4" />
+              Save
             </CustomButton>
           )}
-
-
-
-          {/* Export */}
-          <CustomButton
-            variant="primary"
-            size="sm"
-            onClick={handleExportPDF}
-            isLoading={isExporting}
-            className="gap-2 sm:px-3 sm:py-2.5 p-2"
-          >
-            <Download className="h-4 w-4" />
-            <span className="hidden sm:inline">Export</span>
-          </CustomButton>
-
-          {/* Logout (Auth Required) */}
-          {isAuthenticated() && (
-            <CustomButton
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                logout();
-                toast.success('Logged out');
-                navigate('/');
-              }}
-              title="Logout"
-              className="gap-2 sm:px-3 sm:py-2.5 p-2"
-            >
-              <LogOut className="h-4 w-4" />
-              <span className="hidden sm:inline">Logout</span>
-            </CustomButton>
-          )}
-
-          {/* Mobile Menu */}
-          <button
-            onClick={() => setShowMobileMenu(!showMobileMenu)}
-            className="md:hidden p-2 hover:bg-muted rounded-lg"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
         </div>
       </header>
 
-      <div className="flex-1 flex overflow-hidden">
-        {/* Mobile Sidebar Overlay */}
-        {showMobileMenu && (
-          <div
-            className="fixed inset-0 bg-black/40 z-30 md:hidden"
-            onClick={() => setShowMobileMenu(false)}
-          />
-        )}
+      {/* ========== MAIN CONTENT ========== */}
+      <main className="flex-1 flex overflow-hidden relative">
+        {/* Left Panel — Step Content */}
+        <div
+          className={`flex-1 min-w-0 overflow-hidden ${
+            showMobilePreview ? 'hidden lg:block' : 'block'
+          }`}
+        >
+          {activeStep === 'content' && <ContentStep onNext={goNext} initialSection={activeContentSection} />}
+          {activeStep === 'ai-tools' && <AIToolsStep onNext={goNext} onPrev={goPrev} />}
+          {activeStep === 'customize' && <CustomizeStep onNext={goNext} onPrev={goPrev} />}
+          {activeStep === 'finalize' && (
+            <FinalizeStep
+              onPrev={goPrev}
+              onNavigateToSection={navigateToSection}
+              previewRef={previewRef as React.RefObject<HTMLDivElement>}
+            />
+          )}
+        </div>
 
-        {/* Left Sidebar - Sections */}
-        <aside className={`md:static fixed left-0 bg-card border-r z-40 overflow-hidden h-[calc(100vh-64px)] flex xl:max-w-[350px] max-w-[290px] w-full flex-col shrink-0 transition-transform duration-300 ${showMobileMenu ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
-          <div className="p-4 border-b shrink-0">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                Sections
-              </h2>
-              <div className="flex items-center gap-3">
-                <span className="text-xs text-muted-foreground">{completion}% complete</span>
-                <button onClick={() => setShowMobileMenu(false)} className="md:hidden text-muted-foreground hover:text-black transition-colors">
+        {/* Right Panel — Live Preview */}
+        <div
+          ref={previewContainerRef}
+          className={`lg:flex flex-[0_0_30%] border-l bg-gradient-to-b from-muted/50 to-background flex-col shrink-0 ${
+            showMobilePreview
+              ? 'fixed inset-0 top-14 z-40 bg-background flex w-full'
+              : 'hidden'
+          }`}
+        >
+          {/* Live Preview Toolbar Header */}
+          <div className="py-2 border-b bg-card/90 backdrop-blur-sm flex items-center justify-between px-3 shrink-0 text-xs">
+            <div className="flex items-center gap-2 text-muted-foreground font-medium">
+              <Eye className="h-3.5 w-3.5 text-primary" />
+              <span>Live Preview</span>
+              <span className="text-[10px] bg-muted px-1.5 py-0.5 rounded text-foreground font-mono">
+                {Math.round(previewScale * 100)}%
+              </span>
+            </div>
+
+            {/* View Mode & Zoom Controls */}
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={() => setViewMode('fit-page')}
+                className={`flex items-center gap-2 px-2 py-1 rounded text-[11px] font-medium transition-colors ${
+                  viewMode === 'fit-page'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted/70 hover:bg-muted text-muted-foreground'
+                }`}
+                title="Fit full page in view without scrolling"
+              >
+                <Minimize2 className="h-3 w-3 inline" />
+                <span className='sm:inline hidden'>Fit Page</span>
+              </button>
+
+              <button
+                onClick={() => setViewMode('fit-width')}
+                className={`flex items-center gap-2 px-2 py-1 rounded text-[11px] font-medium transition-colors ${
+                  viewMode === 'fit-width'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted/70 hover:bg-muted text-muted-foreground'
+                }`}
+                title="Fit document width to container"
+              >
+                <Maximize2 className="h-3 w-3 inline" />
+                <span className='sm:inline hidden'>Fit Width</span>
+              </button>
+
+              <div className="h-3.5 w-px bg-border mx-0.5" />
+
+              <button
+                onClick={handleZoomOut}
+                className="p-1 rounded hover:bg-muted text-muted-foreground transition-colors"
+                title="Zoom Out"
+              >
+                <ZoomOut className="h-3.5 w-3.5" />
+              </button>
+
+              <button
+                onClick={handleZoomIn}
+                className="p-1 rounded hover:bg-muted text-muted-foreground transition-colors"
+                title="Zoom In"
+              >
+                <ZoomIn className="h-3.5 w-3.5" />
+              </button>
+
+              {/* Close button on mobile preview overlay */}
+              {showMobilePreview && (
+                <button
+                  onClick={() => setShowMobilePreview(false)}
+                  className="lg:hidden ml-2 p-1.5 rounded-full bg-muted text-foreground hover:bg-muted/80"
+                  title="Close Preview"
+                >
                   <X className="h-4 w-4" />
                 </button>
-              </div>
+              )}
             </div>
           </div>
 
-          <PanelGroup direction="vertical" className="flex-1 overflow-hidden">
-            <Panel defaultSize={60} minSize={20} className="flex flex-col">
-              <div className="flex-1 overflow-y-auto p-2 space-y-1 scrollbar-thin">
-                {sections.map((section) => {
-                  const Icon = section.icon;
-                  const isActive = activeSection === section.id;
-                  const isComplete = getSectionStatus(section.id);
-                  return (
-                    <button
-                      key={section.id}
-                      onClick={() => {
-                        setActiveSection(section.id);
-                        setShowMobileMenu(false);
-                      }}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all text-left relative ${isActive
-                        ? 'bg-primary/10 text-primary font-medium'
-                        : 'text-muted-foreground hover:bg-muted'
-                        }`}
-                    >
-                      <div
-                        className="p-1.5 rounded-md"
-                        style={{
-                          backgroundColor: isActive ? section.color : 'transparent',
-                          color: isActive ? 'white' : 'inherit',
-                        }}
-                      >
-                        <Icon className="h-4 w-4" />
-                      </div>
-                      <span className="flex-1">{section.label}</span>
-                      {isComplete && (
-                        <CheckCircle2 className="h-4 w-4 text-green-500" />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </Panel>
-
-            <PanelResizeHandle className="py-0.5 border-t w-full bg-gray-50 cursor-ns-resize shrink-0 z-10 flex items-center justify-center relative group">
-              <div className="w-12 h-1 bg-border rounded-full group-hover:bg-primary/60 group-active:bg-primary transition-colors" />
-            </PanelResizeHandle>
-
-            <Panel defaultSize={60} minSize={20} className="flex flex-col border-t">
-              <div className="p-4 overflow-y-auto scrollbar-thin flex-1">
-                <ATSScore />
-                <div className="mt-4">
-                  <JobMatcher />
-                </div>
-                <div className="mt-4">
-                  <CoverLetterGenerator />
-                </div>
-                <div className="mt-4">
-                  <ResumeUpload />
-                </div>
-              </div>
-            </Panel>
-          </PanelGroup>
-        </aside>
-
-        {/* Version History Sidebar */}
-        <AnimatePresence>
-          {showVersionHistory && (
-            <VersionHistory onClose={() => setShowVersionHistory(false)} />
-          )}
-        </AnimatePresence>
-
-        {/* Main Editor Area */}
-        <main className="flex-1 flex overflow-hidden">
-          {/* Form Panel */}
-          <div className="flex-1 border-r bg-background overflow-y-auto">
-            <div className="max-w-3xl mx-auto lg:p-6 p-4 space-y-6">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeSection}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  {/* Personal Information */}
-                  {activeSection === 'personal' && (
-                    <div className="space-y-6">
-                      <div>
-                        <h2 className="text-2xl font-bold mb-2">Personal Information</h2>
-                        <p className="text-sm text-muted-foreground">
-                          Your basic contact details and professional links
-                        </p>
-                      </div>
-
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>Basic Details</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <CustomInput
-                            label="Full Name"
-                            value={currentResume.personalInfo.name}
-                            onChange={(e) => updatePersonalInfo({ name: e.target.value })}
-                            placeholder="John Doe"
-                            leftIcon={<User className="h-4 w-4" />}
-                          />
-                          <CustomInput
-                            label="Professional Title"
-                            value={currentResume.personalInfo.title}
-                            onChange={(e) => updatePersonalInfo({ title: e.target.value })}
-                            placeholder="Software Engineer"
-                          />
-                        </CardContent>
-                      </Card>
-
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>Contact Information</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <CustomInput
-                            label="Email"
-                            type="email"
-                            value={currentResume.personalInfo.email}
-                            onChange={(e) => updatePersonalInfo({ email: e.target.value })}
-                            placeholder="john@example.com"
-                            leftIcon={<Mail className="h-4 w-4" />}
-                          />
-                          <CustomInput
-                            label="Phone"
-                            value={currentResume.personalInfo.phone}
-                            onChange={(e) => updatePersonalInfo({ phone: e.target.value })}
-                            placeholder="+1 (555) 123-4567"
-                            leftIcon={<Phone className="h-4 w-4" />}
-                          />
-                          <CustomInput
-                            label="Location"
-                            value={currentResume.personalInfo.location}
-                            onChange={(e) => updatePersonalInfo({ location: e.target.value })}
-                            placeholder="San Francisco, CA"
-                            leftIcon={<MapPin className="h-4 w-4" />}
-                          />
-                        </CardContent>
-                      </Card>
-
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>Professional Links</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <CustomInput
-                            label="LinkedIn"
-                            value={currentResume.personalInfo.linkedin || ''}
-                            onChange={(e) => updatePersonalInfo({ linkedin: e.target.value })}
-                            placeholder="linkedin.com/in/johndoe"
-                            leftIcon={<Linkedin className="h-4 w-4" />}
-                          />
-                          <CustomInput
-                            label="GitHub"
-                            value={currentResume.personalInfo.github || ''}
-                            onChange={(e) => updatePersonalInfo({ github: e.target.value })}
-                            placeholder="github.com/johndoe"
-                            leftIcon={<Github className="h-4 w-4" />}
-                          />
-                          <CustomInput
-                            label="Website"
-                            value={currentResume.personalInfo.website || ''}
-                            onChange={(e) => updatePersonalInfo({ website: e.target.value })}
-                            placeholder="johndoe.com"
-                            leftIcon={<Globe className="h-4 w-4" />}
-                          />
-                        </CardContent>
-                      </Card>
-                    </div>
-                  )}
-
-                  {/* Summary */}
-                  {activeSection === 'summary' && (
-                    <div className="space-y-6">
-                      <div>
-                        <h2 className="text-2xl font-bold mb-2">Professional Summary</h2>
-                        <p className="text-sm text-muted-foreground">
-                          Write a compelling summary highlighting your experience
-                        </p>
-                      </div>
-                      <Card>
-                        <CardContent className="pt-6">
-                          <SummaryGenerator
-                            jobTitle={currentResume.personalInfo.title}
-                            onSelect={(summary) => updateSummary(summary)}
-                          />
-                          <CustomTextarea
-                            label="Summary"
-                            value={currentResume.summary}
-                            showCount
-                            maxLength={500}
-                            onChange={(e) => updateSummary(e.target.value)}
-                            placeholder="Experienced software engineer with 5+ years..."
-                            className="min-h-[200px]"
-                          />
-                        </CardContent>
-                      </Card>
-                    </div>
-                  )}
-
-                  {/* Experience */}
-                  {activeSection === 'experience' && (
-                    <div className="space-y-6">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h2 className="text-2xl font-bold mb-2">Work Experience</h2>
-                          <p className="text-sm text-muted-foreground">
-                            Add your professional work history
-                          </p>
-                        </div>
-                        <CustomButton
-                          variant="outline"
-                          size="sm"
-                          onClick={() => addExperience({
-                            company: '',
-                            position: '',
-                            startDate: '',
-                            endDate: '',
-                            current: false,
-                            description: '',
-                            achievements: []
-                          })}
-                          className="gap-2"
-                        >
-                          <Plus className="h-4 w-4" />
-                          Add
-                        </CustomButton>
-                      </div>
-
-                      {currentResume.experience.length === 0 ? (
-                        <Card>
-                          <CardContent className="py-12 text-center text-muted-foreground">
-                            <Briefcase className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                            <p>No experience added yet</p>
-                          </CardContent>
-                        </Card>
-                      ) : (
-                        <div className="space-y-4">
-                          {currentResume.experience.map((exp, i) => (
-                            <Card key={exp.id}>
-                              <CardHeader>
-                                <div className="flex items-center justify-between">
-                                  <CardTitle>Experience {i + 1}</CardTitle>
-                                  <button
-                                    onClick={() => deleteExperience(exp.id)}
-                                    className="text-destructive hover:bg-destructive/10 p-2 rounded-lg"
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </button>
-                                </div>
-                              </CardHeader>
-                              <CardContent className="space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
-                                  <CustomInput
-                                    label="Company"
-                                    value={exp.company}
-                                    onChange={(e) => updateExperience(exp.id, { company: e.target.value })}
-                                    leftIcon={<Building2 className="h-4 w-4" />}
-                                  />
-                                  <CustomInput
-                                    label="Position"
-                                    value={exp.position}
-                                    onChange={(e) => updateExperience(exp.id, { position: e.target.value })}
-                                  />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                  <CustomInput
-                                    label="Start Date"
-                                    type="month"
-                                    value={exp.startDate}
-                                    onChange={(e) => updateExperience(exp.id, { startDate: e.target.value })}
-                                    leftIcon={<Calendar className="h-4 w-4" />}
-                                  />
-                                  <CustomInput
-                                    label="End Date"
-                                    type="month"
-                                    value={exp.endDate}
-                                    disabled={exp.current}
-                                    onChange={(e) => updateExperience(exp.id, { endDate: e.target.value })}
-                                    leftIcon={<Calendar className="h-4 w-4" />}
-                                  />
-                                </div>
-                                <label className="flex items-center gap-2 text-sm cursor-pointer">
-                                  <input
-                                    type="checkbox"
-                                    checked={exp.current}
-                                    onChange={(e) => updateExperience(exp.id, { current: e.target.checked })}
-                                    className="rounded"
-                                  />
-                                  Currently working here
-                                </label>
-                                <ExperienceGenerator
-                                  role={exp.position}
-                                  onAddPoints={(points) => {
-                                    const newAchievements = [...exp.achievements, ...points];
-                                    updateExperience(exp.id, { achievements: newAchievements });
-                                  }}
-                                />
-                                <CustomTextarea
-                                  label="Achievements (one per line)"
-                                  value={exp.achievements.join('\n')}
-                                  onChange={(e) => updateExperience(exp.id, {
-                                    achievements: e.target.value.split('\n').filter(Boolean)
-                                  })}
-                                  className="min-h-[100px]"
-                                />
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Education */}
-                  {activeSection === 'education' && (
-                    <div className="space-y-6">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h2 className="text-2xl font-bold mb-2">Education</h2>
-                          <p className="text-sm text-muted-foreground">
-                            Add your educational background
-                          </p>
-                        </div>
-                        <CustomButton
-                          variant="outline"
-                          size="sm"
-                          onClick={() => addEducation({
-                            institution: '',
-                            degree: '',
-                            field: '',
-                            startDate: '',
-                            endDate: '',
-                            gpa: ''
-                          })}
-                          className="gap-2"
-                        >
-                          <Plus className="h-4 w-4" />
-                          Add
-                        </CustomButton>
-                      </div>
-
-                      {currentResume.education.length === 0 ? (
-                        <Card>
-                          <CardContent className="py-12 text-center text-muted-foreground">
-                            <GraduationCap className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                            <p>No education added yet</p>
-                          </CardContent>
-                        </Card>
-                      ) : (
-                        <div className="space-y-4">
-                          {currentResume.education.map((edu, i) => (
-                            <Card key={edu.id}>
-                              <CardHeader>
-                                <div className="flex items-center justify-between">
-                                  <CardTitle>Education {i + 1}</CardTitle>
-                                  <button
-                                    onClick={() => deleteEducation(edu.id)}
-                                    className="text-destructive hover:bg-destructive/10 p-2 rounded-lg"
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </button>
-                                </div>
-                              </CardHeader>
-                              <CardContent className="space-y-4">
-                                <CustomInput
-                                  label="Institution"
-                                  value={edu.institution}
-                                  onChange={(e) => updateEducation(edu.id, { institution: e.target.value })}
-                                />
-                                <div className="grid grid-cols-2 gap-4">
-                                  <CustomInput
-                                    label="Degree"
-                                    value={edu.degree}
-                                    onChange={(e) => updateEducation(edu.id, { degree: e.target.value })}
-                                  />
-                                  <CustomInput
-                                    label="Field"
-                                    value={edu.field}
-                                    onChange={(e) => updateEducation(edu.id, { field: e.target.value })}
-                                  />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                  <CustomInput
-                                    label="Start"
-                                    type="month"
-                                    value={edu.startDate}
-                                    onChange={(e) => updateEducation(edu.id, { startDate: e.target.value })}
-                                  />
-                                  <CustomInput
-                                    label="End"
-                                    type="month"
-                                    value={edu.endDate}
-                                    onChange={(e) => updateEducation(edu.id, { endDate: e.target.value })}
-                                  />
-                                </div>
-                                <CustomInput
-                                  label="GPA (optional)"
-                                  value={edu.gpa || ''}
-                                  onChange={(e) => updateEducation(edu.id, { gpa: e.target.value })}
-                                />
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Skills */}
-                  {activeSection === 'skills' && (
-                    <div className="space-y-6">
-                      <div>
-                        <h2 className="text-2xl font-bold mb-2">Skills</h2>
-                        <p className="text-sm text-muted-foreground">
-                          List your technical and professional skills
-                        </p>
-                      </div>
-                      <div className="grid gap-4">
-                        <Card>
-                          <CardHeader>
-                            <CardTitle>Technical Skills</CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <CustomTextarea
-                              label="Skills (comma-separated)"
-                              value={currentResume.skills.technical.join(', ')}
-                              onChange={(e) => updateSkills({
-                                technical: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
-                              })}
-                              placeholder="React, TypeScript, Node.js..."
-                              className="min-h-[100px]"
-                            />
-                          </CardContent>
-                        </Card>
-                        <Card>
-                          <CardHeader>
-                            <CardTitle>Languages</CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <CustomTextarea
-                              label="Languages (comma-separated)"
-                              value={currentResume.skills.languages.join(', ')}
-                              onChange={(e) => updateSkills({
-                                languages: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
-                              })}
-                              placeholder="English (Native), Spanish (Fluent)..."
-                              className="min-h-[100px]"
-                            />
-                          </CardContent>
-                        </Card>
-                        <Card>
-                          <CardHeader>
-                            <CardTitle>Soft Skills</CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <CustomTextarea
-                              label="Soft Skills (comma-separated)"
-                              value={currentResume.skills.softSkills.join(', ')}
-                              onChange={(e) => updateSkills({
-                                softSkills: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
-                              })}
-                              placeholder="Leadership, Communication..."
-                              className="min-h-[100px]"
-                            />
-                          </CardContent>
-                        </Card>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Projects */}
-                  {activeSection === 'projects' && (
-                    <div className="space-y-6">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h2 className="text-2xl font-bold mb-2">Projects</h2>
-                          <p className="text-sm text-muted-foreground">
-                            Showcase your portfolio projects
-                          </p>
-                        </div>
-                        <CustomButton
-                          variant="outline"
-                          size="sm"
-                          onClick={() => addProject({
-                            name: '',
-                            description: '',
-                            technologies: [],
-                            url: ''
-                          })}
-                          className="gap-2"
-                        >
-                          <Plus className="h-4 w-4" />
-                          Add
-                        </CustomButton>
-                      </div>
-
-                      {currentResume.projects.length === 0 ? (
-                        <Card>
-                          <CardContent className="py-12 text-center text-muted-foreground">
-                            <FolderGit2 className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                            <p>No projects added yet</p>
-                          </CardContent>
-                        </Card>
-                      ) : (
-                        <div className="space-y-4">
-                          {currentResume.projects.map((proj, i) => (
-                            <Card key={proj.id}>
-                              <CardHeader>
-                                <div className="flex items-center justify-between">
-                                  <CardTitle>Project {i + 1}</CardTitle>
-                                  <button
-                                    onClick={() => deleteProject(proj.id)}
-                                    className="text-destructive hover:bg-destructive/10 p-2 rounded-lg"
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </button>
-                                </div>
-                              </CardHeader>
-                              <CardContent className="space-y-4">
-                                <CustomInput
-                                  label="Name"
-                                  value={proj.name}
-                                  onChange={(e) => updateProject(proj.id, { name: e.target.value })}
-                                />
-                                <CustomTextarea
-                                  label="Description"
-                                  value={proj.description}
-                                  onChange={(e) => updateProject(proj.id, { description: e.target.value })}
-                                  className="min-h-[100px]"
-                                />
-                                <CustomInput
-                                  label="Technologies (comma-separated)"
-                                  value={proj.technologies.join(', ')}
-                                  onChange={(e) => updateProject(proj.id, {
-                                    technologies: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
-                                  })}
-                                />
-                                <CustomInput
-                                  label="URL"
-                                  value={proj.url || ''}
-                                  onChange={(e) => updateProject(proj.id, { url: e.target.value })}
-                                  leftIcon={<Globe className="h-4 w-4" />}
-                                />
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Certifications */}
-                  {activeSection === 'certifications' && (
-                    <div className="space-y-6">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h2 className="text-2xl font-bold mb-2">Certifications</h2>
-                          <p className="text-sm text-muted-foreground">
-                            Add your professional certifications
-                          </p>
-                        </div>
-                        <CustomButton
-                          variant="outline"
-                          size="sm"
-                          onClick={() => addCertification({
-                            name: '',
-                            issuer: '',
-                            date: '',
-                            url: ''
-                          })}
-                          className="gap-2"
-                        >
-                          <Plus className="h-4 w-4" />
-                          Add
-                        </CustomButton>
-                      </div>
-
-                      {currentResume.additional.certifications.length === 0 ? (
-                        <Card>
-                          <CardContent className="py-12 text-center text-muted-foreground">
-                            <Award className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                            <p>No certifications added yet</p>
-                          </CardContent>
-                        </Card>
-                      ) : (
-                        <div className="space-y-4">
-                          {currentResume.additional.certifications.map((cert, i) => (
-                            <Card key={cert.id}>
-                              <CardHeader>
-                                <div className="flex items-center justify-between">
-                                  <CardTitle>Certification {i + 1}</CardTitle>
-                                  <button
-                                    onClick={() => deleteCertification(cert.id)}
-                                    className="text-destructive hover:bg-destructive/10 p-2 rounded-lg"
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </button>
-                                </div>
-                              </CardHeader>
-                              <CardContent className="space-y-4">
-                                <CustomInput
-                                  label="Name"
-                                  value={cert.name}
-                                  onChange={(e) => updateCertification(cert.id, { name: e.target.value })}
-                                />
-                                <CustomInput
-                                  label="Issuer"
-                                  value={cert.issuer}
-                                  onChange={(e) => updateCertification(cert.id, { issuer: e.target.value })}
-                                />
-                                <div className="grid grid-cols-2 gap-4">
-                                  <CustomInput
-                                    label="Date"
-                                    type="month"
-                                    value={cert.date}
-                                    onChange={(e) => updateCertification(cert.id, { date: e.target.value })}
-                                  />
-                                  <CustomInput
-                                    label="URL (optional)"
-                                    value={cert.url || ''}
-                                    onChange={(e) => updateCertification(cert.id, { url: e.target.value })}
-                                  />
-                                </div>
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Additional */}
-                  {activeSection === 'additional' && (
-                    <div className="space-y-6">
-                      <div>
-                        <h2 className="text-2xl font-bold mb-2">Additional Information</h2>
-                        <p className="text-sm text-muted-foreground">
-                          Awards, volunteer work, and hobbies
-                        </p>
-                      </div>
-                      <div className="grid gap-4">
-                        <Card>
-                          <CardHeader>
-                            <CardTitle>Awards & Honors</CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <CustomTextarea
-                              label="Awards (one per line)"
-                              value={currentResume.additional.awards.join('\n')}
-                              onChange={(e) => updateAdditional('awards', e.target.value.split('\n').filter(Boolean))}
-                              className="min-h-[100px]"
-                            />
-                          </CardContent>
-                        </Card>
-                        <Card>
-                          <CardHeader>
-                            <CardTitle>Volunteer Work</CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <CustomTextarea
-                              label="Volunteer Work (one per line)"
-                              value={currentResume.additional.volunteer.join('\n')}
-                              onChange={(e) => updateAdditional('volunteer', e.target.value.split('\n').filter(Boolean))}
-                              className="min-h-[100px]"
-                            />
-                          </CardContent>
-                        </Card>
-                        <Card>
-                          <CardHeader>
-                            <CardTitle>Hobbies & Interests</CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <CustomTextarea
-                              label="Hobbies (comma-separated)"
-                              value={currentResume.additional.hobbies.join(', ')}
-                              onChange={(e) => updateAdditional('hobbies', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
-                              className="min-h-[100px]"
-                            />
-                          </CardContent>
-                        </Card>
-                      </div>
-                    </div>
-                  )}
-                </motion.div>
-              </AnimatePresence>
-            </div>
-          </div>
-
-          {/* Style Panel */}
-          <AnimatePresence>
-            {showStylePanel && (
-              <motion.aside
-                initial={{ width: 0 }}
-                animate={{ width: 300 }}
-                exit={{ width: 0 }}
-                className="border-s bg-card overflow-hidden shrink-0  h-[calc(100vh-64px)] fixed z-20 right-0"
+          {/* Scaled Preview Render Area */}
+          <div className="flex-1 overflow-auto scrollbar-thin bg-gradient-to-b from-muted/30 to-background flex justify-center p-3 sm:p-4">
+            <div
+              style={{
+                width: `${A4_WIDTH_PX * previewScale}px`,
+                height: `${A4_HEIGHT_PX * previewScale}px`,
+              }}
+              className="relative shrink-0 shadow-2xl rounded-sm overflow-hidden bg-white transition-all duration-200"
+            >
+              <div
+                ref={previewRef}
+                style={{
+                  transform: `scale(${previewScale})`,
+                  transformOrigin: 'top left',
+                  fontFamily: templateSettings.fontFamily,
+                  width: `${A4_WIDTH_PX}px`,
+                  minWidth: `${A4_WIDTH_PX}px`,
+                  maxWidth: `${A4_WIDTH_PX}px`,
+                  minHeight: `${A4_HEIGHT_PX}px`,
+                  background: '#ffffff',
+                }}
               >
-                <div className="lg:p-6 p-4 w-[300px] h-full overflow-y-auto">
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="font-bold text-lg">Style Settings</h3>
-                    <button
-                      onClick={() => setShowStylePanel(false)}
-                      className="p-1.5 hover:bg-muted rounded-lg"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-
-                  <div className="space-y-6">
-                    <div>
-                      <label className="text-sm font-semibold mb-3 block">Color Theme</label>
-                      <div className="flex gap-2 mb-2">
-                        <button
-                          onClick={() => updateTemplateSettings({
-                            primaryColor: '#1e3a5f',
-                            accentColor: '#3b82f6',
-                            secondaryColor: '#3b82f6',
-                            fontFamily: 'Inter',
-                            fontSize: 'medium'
-                          })}
-                          className="px-3 py-1.5 rounded-lg text-sm bg-muted hover:bg-muted/80"
-                        >
-                          Reset to default
-                        </button>
-                      </div>
-                      <div className="grid grid-cols-3 gap-2">
-                        {colorPresets.map((preset) => (
-                          <button
-                            key={preset.name}
-                            onClick={() => updateTemplateSettings({
-                              primaryColor: preset.primary,
-                              accentColor: preset.accent
-                            })}
-                            className={`p-2 rounded-lg border-2 ${templateSettings.primaryColor === preset.primary
-                              ? 'border-primary'
-                              : 'border-muted'
-                              }`}
-                          >
-                            <div className="flex gap-1 mb-1">
-                              <div
-                                className="w-4 h-4 rounded"
-                                style={{ backgroundColor: preset.primary }}
-                              />
-                              <div
-                                className="w-4 h-4 rounded"
-                                style={{ backgroundColor: preset.accent }}
-                              />
-                            </div>
-                            <span className="text-xs">{preset.name}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <Separator />
-
-                    <div>
-                      <label className="text-sm font-semibold mb-3 block">Font Family</label>
-                      <div className="space-y-2">
-                        {fontOptions.map((font) => (
-                          <button
-                            key={font.name}
-                            onClick={() => updateTemplateSettings({ fontFamily: font.value })}
-                            className={`w-full text-left px-3 py-2 rounded-lg text-sm ${templateSettings.fontFamily === font.value
-                              ? 'bg-primary text-primary-foreground'
-                              : 'bg-muted hover:bg-muted/80'
-                              }`}
-                            style={{ fontFamily: font.value }}
-                          >
-                            {font.name}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <Separator />
-
-                    <div>
-                      <label className="text-sm font-semibold mb-3 block">Font Size</label>
-                      <div className="grid grid-cols-3 gap-2">
-                        {['small', 'medium', 'large'].map((size) => (
-                          <button
-                            key={size}
-                            onClick={() => updateTemplateSettings({
-                              fontSize: size as 'small' | 'medium' | 'large'
-                            })}
-                            className={`px-3 py-2 rounded-lg text-sm capitalize ${templateSettings.fontSize === size
-                              ? 'bg-primary text-primary-foreground'
-                              : 'bg-muted'
-                              }`}
-                          >
-                            {size}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </motion.aside>
-            )}
-          </AnimatePresence>
-
-          {/* Preview Panel */}
-          <div
-            ref={previewContainerRef}
-            className="hidden lg:flex w-[50%] border-l bg-gradient-to-b from-muted/50 to-background flex-col shrink-0"
-          >
-            <div className="h-14 border-b bg-card/95 backdrop-blur-sm flex items-center justify-between xl:px-4 px-3 shrink-0 gap-2">
-              <div className="flex items-center gap-2">
-                <Eye className="h-4 w-4 text-primary" />
-                <span className="text-sm font-semibold">Live Preview</span>
-                {/* Minimal dropdown template selector */}
-                <div className="xl:ml-3">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button className="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm bg-muted/60 hover:bg-muted transition border outline-none">
-                        <span className="font-medium">{(templateInfo.find(t => t.id === currentResume.templateId)?.name) || 'Template'}</span>
-                        <ChevronDown className="h-4 w-4 opacity-70" />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent sideOffset={6} align="start" className="w-44">
-                      {templateInfo.map((t) => (
-                        <DropdownMenuItem
-                          key={t.id}
-                          onSelect={() => setTemplate(t.id)}
-                          className={`flex items-center gap-3 px-3 py-2 ${currentResume.templateId === t.id ? 'bg-primary text-primary-foreground' : ''}`}
-                        >
-                          <span className="w-3 h-3 rounded-sm" style={{ background: t.color }} />
-                          <span className="flex-1 text-sm">{t.name}</span>
-                          {currentResume.templateId === t.id && <Check className="h-4 w-4" />}
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setZoom(Math.max(0.3, zoom - 0.1))}
-                  title="Zoom Out"
-                >
-                  <ZoomOut className="h-4 w-4" />
-                </button>
-                <button
-                  onClick={handleFitToWidth}
-                  className="text-xs font-medium"
-                  title="Fit to Width"
-                >
-                  Fit
-                </button>
-                <span className="text-xs font-medium text-center">{Math.round(zoom * 100)}%</span>
-                <button
-                  onClick={() => setZoom(Math.min(1, zoom + 0.1))}
-                  title="Zoom In"
-                >
-                  <ZoomIn className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-            <div className="flex-1 overflow-auto scrollbar-thin bg-gradient-to-b from-muted/30 to-background">
-              <div className="min-h-full py-6 px-4 xl:px-8 flex justify-center">
-                <div
-                  ref={previewRef}
-                  className="shadow-2xl rounded-sm overflow-hidden"
-                  style={{
-                    transform: `scale(${zoom})`,
-                    transformOrigin: 'top center',
-                    fontFamily: templateSettings.fontFamily,
-                    width: '210mm',
-                    minWidth: '210mm',
-                    maxWidth: '210mm',
-                    background: '#ffffff',
-                  }}
-                >
-                  <TemplateRenderer
-                    resume={currentResume}
-                    templateId={currentResume.templateId}
-                    settings={templateSettings}
-                  />
-                </div>
+                <TemplateRenderer
+                  resume={currentResume}
+                  templateId={currentResume.templateId}
+                  settings={templateSettings}
+                />
               </div>
             </div>
           </div>
-        </main>
-      </div>
+        </div>
+
+        {/* Floating Mobile Preview Pill Button */}
+        {!showMobilePreview && (
+          <div className="lg:hidden fixed bottom-4 right-4 z-50">
+            <button
+              onClick={() => setShowMobilePreview(true)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-primary text-primary-foreground shadow-xl font-semibold text-xs transition-transform active:scale-95 hover:scale-105"
+            >
+              <Eye className="h-4 w-4" />
+              Preview Resume
+            </button>
+          </div>
+        )}
+      </main>
     </div>
   );
 };

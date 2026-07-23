@@ -151,18 +151,23 @@ export const MinimalTemplate: React.FC<TemplateProps> = ({ resume, settings }) =
       )}
 
       {/* Certifications */}
-      {additional.certifications.length > 0 && (
+      {additional?.certifications && additional.certifications.length > 0 && (
         <div>
           <h3 className="text-[10px] font-medium text-gray-400 uppercase tracking-[0.2em] mb-4">
             Certifications
           </h3>
           <div className="space-y-1">
-            {additional.certifications.map((cert) => (
-              <div key={cert.id} className="grid grid-cols-[140px_1fr] gap-4">
-                <div className="text-[10px] text-gray-400">{cert.date}</div>
-                <div className="text-gray-600">{cert.name} — {cert.issuer}</div>
-              </div>
-            ))}
+            {additional.certifications.map((cert: any, idx: number) => {
+              const certName = typeof cert === 'string' ? cert : cert?.name || '';
+              const certIssuer = typeof cert === 'object' && cert?.issuer ? ` — ${cert.issuer}` : '';
+              const certDate = typeof cert === 'object' && cert?.date ? cert.date : '';
+              return (
+                <div key={idx} className="grid grid-cols-[140px_1fr] gap-4">
+                  <div className="text-[10px] text-gray-400">{certDate}</div>
+                  <div className="text-gray-600">{certName}{certIssuer}</div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

@@ -146,21 +146,26 @@ export const AcademicTemplate: React.FC<TemplateProps> = ({ resume, settings }) 
                 )}
 
                 {/* Honors & Awards (Certifications map to this in the builder) */}
-                {additional.certifications.length > 0 && (
+                {additional?.certifications && additional.certifications.length > 0 && (
                     <section>
                         <h3
                             className="uppercase font-bold border-b-2 border-black mb-2 pb-0.5"
                             style={{ fontSize: fonts.heading, color: merged.primaryColor }}
                         >
-                            Honors, Awards & Grants
+                            Honors, Awards & Certifications
                         </h3>
                         <ul className="list-none space-y-1">
-                            {additional.certifications.map((cert) => (
-                                <li key={cert.id} className="print-break-inside-avoid flex">
-                                    <span className="w-24 shrink-0">{cert.date}</span>
-                                    <span><span className="font-bold">{cert.name}</span>, {cert.issuer}</span>
-                                </li>
-                            ))}
+                            {additional.certifications.map((cert: any, idx: number) => {
+                                const certName = typeof cert === 'string' ? cert : cert?.name || '';
+                                const certIssuer = typeof cert === 'object' && cert?.issuer ? `, ${cert.issuer}` : '';
+                                const certDate = typeof cert === 'object' && cert?.date ? cert.date : '';
+                                return (
+                                    <li key={idx} className="print-break-inside-avoid flex">
+                                        {certDate && <span className="w-24 shrink-0">{certDate}</span>}
+                                        <span><span className="font-bold">{certName}</span>{certIssuer}</span>
+                                    </li>
+                                );
+                            })}
                         </ul>
                     </section>
                 )}

@@ -41,39 +41,23 @@ const Index = () => {
   };
 
   const features = [
-    { icon: Zap, title: 'Lightning Fast', description: 'Build your resume in minutes with our intuitive editor' },
+    { icon: Zap, title: 'Lightning Fast', description: 'Build your resume in minutes with our intuitive step-by-step editor' },
     { icon: Shield, title: 'ATS-Optimized', description: 'Templates designed to pass applicant tracking systems' },
-    { icon: Palette, title: '4 Pro Templates', description: 'Modern, Classic, Minimal, and Creative designs' },
-    { icon: Download, title: 'PDF Export', description: 'High-quality PDF downloads ready for applications' },
-    { icon: Sparkles, title: 'Real-time Preview', description: 'See changes instantly as you type' },
-    { icon: Clock, title: 'Auto-Save', description: 'Never lose your work with automatic saving' },
+    { icon: Palette, title: '8 Pro Templates', description: 'Modern, Classic, Creative, Developer, and more designs' },
+    { icon: Download, title: 'PDF Export', description: 'High-quality A4 PDF downloads ready for applications' },
+    { icon: Sparkles, title: 'AI-Powered Writing', description: 'Smart summary, bullet points, and cover letter generation' },
+    { icon: Clock, title: 'Job Match Scoring', description: 'Analyze how well your resume matches any job description' },
   ];
 
   const templates = [
-    {
-      id: 'professional',
-      name: 'Professional',
-      description: 'Clean, corporate-focused layout',
-      image: '/thumbnails/professional.png'
-    },
-    {
-      id: 'creative',
-      name: 'Creative',
-      description: 'Bold & vibrant design',
-      image: '/thumbnails/creative.png'
-    },
-    {
-      id: 'developer',
-      name: 'Developer',
-      description: 'Tailored for software engineers',
-      image: '/thumbnails/developer.png'
-    },
-    {
-      id: 'executive',
-      name: 'Executive',
-      description: 'Sophisticated leadership layout',
-      image: '/thumbnails/executive.png'
-    },
+    { id: 'modern', name: 'Modern', description: 'Two-column layout with sidebar', image: '/thumbnails/modern.png' },
+    { id: 'classic', name: 'Classic', description: 'Traditional single-column design', image: '/thumbnails/classic.png' },
+    { id: 'minimal', name: 'Minimal', description: 'Ultra-clean with maximum whitespace', image: '/thumbnails/minimal.png' },
+    { id: 'creative', name: 'Creative', description: 'Bold colors and timeline design', image: '/thumbnails/creative.png' },
+    { id: 'professional', name: 'Professional', description: 'Clean, corporate-focused layout', image: '/thumbnails/professional.png' },
+    { id: 'executive', name: 'Executive', description: 'Sophisticated leadership layout', image: '/thumbnails/executive.png' },
+    { id: 'developer', name: 'Developer', description: 'Tailored for software engineers', image: '/thumbnails/developer.png' },
+    { id: 'academic', name: 'Academic', description: 'Traditional CV for research', image: '/thumbnails/academic.png' },
   ];
 
   const stats = [
@@ -160,9 +144,9 @@ const Index = () => {
           <div className="flex items-center gap-4">
             {isAuthenticated() ? (
               <div className="hidden sm:flex items-center gap-4">
-                <Link to="/editor" className="hidden sm:block">
+                <Link to="/templates" className="hidden sm:block">
                   <CustomButton variant="primary" size="sm">
-                    Dashboard <ArrowRight />
+                    Build Resume <ArrowRight />
                   </CustomButton>
                 </Link>
                 <button
@@ -238,7 +222,7 @@ const Index = () => {
                 Contact
               </a>
               <Link
-                to="/editor"
+                to="/templates"
                 className="block sm:hidden"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
@@ -382,7 +366,7 @@ const Index = () => {
                 transition={{ delay: 0.7, duration: 0.5 }}
                 className="flex flex-col sm:flex-row gap-4 justify-center items-center"
               >
-                <Link to="/editor" className="group">
+                <Link to="/templates" className="group">
                   <CustomButton variant="primary" size="lg">
                     Start Building Free
                     <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
@@ -565,7 +549,7 @@ const Index = () => {
             transition={{ delay: 0.8, duration: 0.6 }}
             className="text-center lg:mt-8 mt-6"
           >
-            <Link to="/editor" className="group">
+            <Link to="/templates" className="group">
               <CustomButton variant="primary">
                 Try All Features Free
                 <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
@@ -601,7 +585,7 @@ const Index = () => {
               Choose Your Perfect Resume Style
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              4 professionally designed, ATS-optimized templates crafted for different industries and career levels.
+              8 professionally designed, ATS-optimized templates crafted for different industries and career levels.
               Each template is fully customizable and ready to impress.
             </p>
           </motion.div>
@@ -640,7 +624,7 @@ const Index = () => {
                     className="group relative h-full"
                   >
 
-                    <Link to={`/editor?template=${template.id}`} className="block relative h-full">
+                    <Link to={`/templates`} className="block relative h-full">
                       <div className="glass shadow-md rounded-2xl overflow-hidden border-border hover:border-primary/30 transition-all duration-300 hover:shadow-lg h-full flex flex-col">
                         {/* Template Preview */}
                         <div className="h-80 relative overflow-hidden bg-gradient-to-br from-muted/20 to-muted/40">
@@ -905,7 +889,7 @@ const Index = () => {
                 <span className="font-semibold text-primary">95%</span> of users get interviews within 2 weeks
               </div>
             </div>
-            <Link to="/editor" className="group">
+            <Link to="/templates" className="group">
               <CustomButton variant="primary">
                 Join Success Stories
                 <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
@@ -1081,7 +1065,7 @@ const Index = () => {
               transition={{ delay: 0.5, duration: 0.6 }}
               className="flex flex-wrap gap-4 justify-center items-center"
             >
-              <Link to="/editor" className="group">
+              <Link to="/templates" className="group">
                 <CustomButton variant="secondary" size="lg">
                   <FileText className="h-5 w-5" />
                   Start Building Free
@@ -1288,7 +1272,7 @@ const Index = () => {
               <h4 className="font-bold text-white mb-6 text-lg">Quick Links</h4>
               <div className="space-y-4">
                 {[
-                  { to: "/editor", label: "Resume Builder" },
+                  { to: "/templates", label: "Resume Builder" },
                   { href: "#templates", label: "Templates Overview" },
                   { to: "/blog", label: "Career Blog" },
                   { href: "#features", label: "Features" },

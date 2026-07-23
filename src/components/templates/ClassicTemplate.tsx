@@ -28,7 +28,7 @@ export const ClassicTemplate: React.FC<TemplateProps> = ({ resume, settings }) =
     >
       {/* Header */}
       <div className="text-center border-b-2 border-black pb-4 mb-4">
-        <h1 className="text-2xl font-bold  mb-1" style={{ color: merged.primaryColor }}>{personalInfo.name || 'Your Name'}</h1>
+        <h1 className="sm:text-2xl text-xl font-bold  mb-1" style={{ color: merged.primaryColor }}>{personalInfo.name || 'Your Name'}</h1>
         {personalInfo.title && (
           <h2 className="text-sm italic mb-2" style={{ color: '#4b5563' }}>{personalInfo.title}</h2>
         )}
@@ -162,18 +162,25 @@ export const ClassicTemplate: React.FC<TemplateProps> = ({ resume, settings }) =
       )}
 
       {/* Certifications */}
-      {additional.certifications.length > 0 && (
+      {additional?.certifications && additional.certifications.length > 0 && (
         <div>
           <h3 className="text-sm font-bold text-black uppercase  mb-2 border-b border-gray-300 pb-1">
             Certifications
           </h3>
           <div className="flex flex-wrap gap-x-4 gap-y-1">
-            {additional.certifications.map((cert) => (
-              <div key={cert.id} className="text-gray-700">
-                <span className="font-semibold">{cert.name}</span>
-                <span className="text-[10px] text-gray-500 ml-1">({cert.issuer}, {cert.date})</span>
-              </div>
-            ))}
+            {additional.certifications.map((cert: any, idx: number) => {
+              const certName = typeof cert === 'string' ? cert : cert?.name || '';
+              const certIssuer = typeof cert === 'object' && cert?.issuer ? cert.issuer : '';
+              const certDate = typeof cert === 'object' && cert?.date ? cert.date : '';
+              return (
+                <div key={idx} className="text-gray-700">
+                  <span className="font-semibold">{certName}</span>
+                  {(certIssuer || certDate) && (
+                    <span className="text-[10px] text-gray-500 ml-1">({certIssuer}{certIssuer && certDate ? ', ' : ''}{certDate})</span>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

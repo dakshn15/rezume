@@ -53,11 +53,11 @@ const PrintPreview = () => {
                 We render slightly differently for the printer. 
                 The margin/padding is handled by the template or @page CSS.
              */}
-            <div className="mx-auto" style={{ width: '210mm' }}>
+            <div className="mx-auto print:w-full print:mx-0 print:p-0" style={{ width: '210mm' }}>
                 <TemplateRenderer
                     resume={resume}
                     templateId={template}
-                    settings={templateSettings} // Note: This uses global store settings. In prod, use saved settings.
+                    settings={templateSettings}
                 />
             </div>
         </div>

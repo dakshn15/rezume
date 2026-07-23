@@ -58,15 +58,15 @@ const Login = () => {
                     </p>
                     <div className="mt-12 grid grid-cols-3 gap-8 text-center">
                         <div>
-                            <div className="text-2xl font-bold">4+</div>
+                            <div className="sm:text-2xl text-xl font-bold">4+</div>
                             <div className="text-sm text-white/60">Templates</div>
                         </div>
                         <div>
-                            <div className="text-2xl font-bold">AI</div>
+                            <div className="sm:text-2xl text-xl font-bold">AI</div>
                             <div className="text-sm text-white/60">Powered</div>
                         </div>
                         <div>
-                            <div className="text-2xl font-bold">ATS</div>
+                            <div className="sm:text-2xl text-xl font-bold">ATS</div>
                             <div className="text-sm text-white/60">Optimized</div>
                         </div>
                     </div>
@@ -83,7 +83,7 @@ const Login = () => {
                     </div>
 
                     <div className="mb-8">
-                        <h2 className="text-2xl font-bold text-slate-900">Welcome back</h2>
+                        <h2 className="sm:text-2xl text-xl font-bold text-slate-900">Welcome back</h2>
                         <p className="text-slate-500 mt-1">Sign in to continue building your resume.</p>
                     </div>
 

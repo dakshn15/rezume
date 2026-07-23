@@ -1,11 +1,11 @@
 import api from './api';
 
-export const generateSummary = async (jobTitle: string, experienceYears: number): Promise<string> => {
+export const generateSummary = async (jobTitle: string, experienceYears: number, skills: string[] = []): Promise<string> => {
     try {
         const response = await api.post('/ai/summary', {
             jobTitle,
             experience: experienceYears,
-            skills: [] // Frontend might need to pass skills, for now optional
+            skills
         });
         return response.data.summary;
     } catch (error) {

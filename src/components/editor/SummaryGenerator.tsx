@@ -4,6 +4,7 @@ import { CustomButton } from '@/components/ui/custom-button';
 import { generateSummary } from '@/services/aiService';
 import { Card, CardContent } from '@/components/ui/card';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useResumeStore } from '@/store/resumeStore';
 
 interface SummaryGeneratorProps {
     jobTitle: string;
@@ -11,12 +12,14 @@ interface SummaryGeneratorProps {
 }
 
 export const SummaryGenerator: React.FC<SummaryGeneratorProps> = ({ jobTitle, onSelect }) => {
+    const { currentResume } = useResumeStore();
     const [isGenerating, setIsGenerating] = useState(false);
     const [generatedOptions, setGeneratedOptions] = useState<string[]>([]);
     const [error, setError] = useState<string>('');
 
     const handleGenerate = async () => {
-        if (!jobTitle) {
+        const titleToUse = jobTitle || currentResume.personalInfo.title;
+        if (!titleToUse) {
             setError('Please enter a Job Title in Personal Info first.');
             return;
         }
@@ -25,10 +28,11 @@ export const SummaryGenerator: React.FC<SummaryGeneratorProps> = ({ jobTitle, on
         setError('');
 
         try {
+            const skills = currentResume.skills?.technical || [];
             // Generate 3 variations
-            const p1 = generateSummary(jobTitle, 5); // Mock 5 years for now
-            const p2 = generateSummary(jobTitle, 3);
-            const p3 = generateSummary(jobTitle, 8);
+            const p1 = generateSummary(titleToUse, 5, skills);
+            const p2 = generateSummary(titleToUse, 3, skills);
+            const p3 = generateSummary(titleToUse, 8, skills);
 
             const results = await Promise.all([p1, p2, p3]);
             setGeneratedOptions(results);

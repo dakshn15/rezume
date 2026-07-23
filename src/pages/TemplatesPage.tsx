@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
-import { templateInfo } from '@/components/templates/TemplateRenderer';
+import { templateInfo } from '@/data/templateData';
 import { CustomButton } from '@/components/ui/custom-button';
 import { FileText, CheckCircle2, ChevronRight, Menu, X, ArrowLeft } from 'lucide-react';
 
@@ -80,16 +80,16 @@ export const TemplatesPage = () => {
             </nav>
 
             <main className="container max-w-7xl mx-auto px-4 py-12 md:py-20">
-                <div className="text-center max-w-3xl mx-auto mb-16">
+                <div className="text-center max-w-3xl mx-auto lg:mb-16 md:mb-8 mb-6">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
                     >
-                        <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
+                        <h1 className="text-2xl md:text-4xl md:text-5xl font-bold tracking-tight mb-4">
                             Choose your perfect resume <span className="text-primary">template</span>
                         </h1>
-                        <p className="text-lg text-muted-foreground">
+                        <p className="md:text-lg text-muted-foreground">
                             Stand out from the crowd with our professionally designed, ATS-friendly templates.
                             Find the perfect match for your industry and style.
                         </p>
@@ -97,12 +97,12 @@ export const TemplatesPage = () => {
                 </div>
 
                 {/* Categories */}
-                <div className="flex flex-wrap justify-center gap-2 mb-12">
+                <div className="flex flex-wrap justify-center gap-2 md:mb-12 mb-8">
                     {CATEGORIES.map((category) => (
                         <button
                             key={category}
                             onClick={() => setActiveCategory(category)}
-                            className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 ${activeCategory === category
+                            className={`md:px-6 px-4 md:py-2 py-1.5 rounded-full text-sm font-medium transition-all duration-300 ${activeCategory === category
                                 ? 'bg-primary text-primary-foreground shadow-md scale-105'
                                 : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground'
                                 }`}
