@@ -15,7 +15,9 @@ const hexToRgba = (hex: string, alpha = 1) => {
 
 const getFontSize = (size: string) => {
   switch (size) {
+    case 'xs': return { base: '9.5px', heading: '16px', section: '10px' };
     case 'small': return { base: '10.5px', heading: '18px', section: '11px' };
+    case 'xl': return { base: '14px', heading: '24px', section: '14px' };
     case 'large': return { base: '13px', heading: '22px', section: '13px' };
     default: return { base: '11px', heading: '20px', section: '11px' };
   }

@@ -3,10 +3,13 @@ import { Resume } from '@/data/resumeModel';
 import { formatDateRange } from '@/utils/helpers';
 import { TemplateSettings } from '@/store/settingsStore';
 import { Mail, Phone, MapPin, Linkedin, Globe } from 'lucide-react';
+import { ResumeLink } from './ResumeLink';
 
 const getFontSize = (size: string) => {
     switch (size) {
+        case 'xs': return { base: '11px', heading: '13px', title: '20px' };
         case 'small': return { base: '12px', heading: '14px', title: '22px' };
+        case 'xl': return { base: '17px', heading: '20px', title: '31px' };
         case 'large': return { base: '16px', heading: '18px', title: '28px' };
         default: return { base: '14px', heading: '16px', title: '24px' };
     }
@@ -52,22 +55,22 @@ export const ProfessionalTemplate: React.FC<TemplateProps> = ({ resume, settings
 
                 <div className="flex flex-wrap gap-x-5 gap-y-2 text-xs font-medium text-gray-500 mt-2">
                     {personalInfo.email && (
-                        <div className="flex items-center gap-1.5 hover:text-gray-800 transition-colors">
+                        <ResumeLink href={personalInfo.email} className="flex items-center gap-1.5 hover:text-gray-800 transition-colors">
                             <Mail size={12} style={{ color: merged.primaryColor }} />
                             <span>{personalInfo.email}</span>
-                        </div>
+                        </ResumeLink>
                     )}
                     {personalInfo.phone && (
-                        <div className="flex items-center gap-1.5 hover:text-gray-800 transition-colors">
+                        <ResumeLink href={personalInfo.linkedin} className="flex items-center gap-1.5 hover:text-gray-800 transition-colors">
                             <Phone size={12} style={{ color: merged.primaryColor }} />
                             <span>{personalInfo.phone}</span>
-                        </div>
+                        </ResumeLink>
                     )}
                     {personalInfo.location && (
-                        <div className="flex items-center gap-1.5 hover:text-gray-800 transition-colors">
+                        <ResumeLink href={personalInfo.website} className="flex items-center gap-1.5 hover:text-gray-800 transition-colors">
                             <MapPin size={12} style={{ color: merged.primaryColor }} />
                             <span>{personalInfo.location}</span>
-                        </div>
+                        </ResumeLink>
                     )}
                     {personalInfo.linkedin && (
                         <div className="flex items-center gap-1.5 hover:text-gray-800 transition-colors">

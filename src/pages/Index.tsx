@@ -127,7 +127,7 @@ const Index = () => {
       <header className="sticky top-0 left-0 right-0 z-50 glass border-b shadow-md">
         <div className="container mx-auto md:py-4 py-3 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-lg bg-gradient-primary flex items-center justify-center">
+            <div className="w-9 h-9 rounded-md bg-gradient-primary flex items-center justify-center">
               <FileText className="h-5 w-5 text-primary-foreground" />
             </div>
             <span className="font-bold text-lg text-foreground">Rezumely</span>

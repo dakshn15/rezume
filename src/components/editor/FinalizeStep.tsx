@@ -134,9 +134,12 @@ export const FinalizeStep: React.FC<FinalizeStepProps> = ({
 
     setIsExporting(true);
     try {
-      const filename = `${resume.personalInfo?.name || 'resume'}-resume.pdf`;
+      const rawTitle = currentResume.name || resume.personalInfo?.name || 'resume';
+      const sanitized = rawTitle.trim().replace(/[/\\?%*:|"<>]/g, '').replace(/\s+/g, '_');
+      const filename = `${sanitized}.pdf`;
+
       await exportToPDF(previewRef.current, filename, exportSettings, setExportProgress);
-      toast.success('PDF downloaded successfully!');
+      toast.success('Choose “Save as PDF” in the print dialog to download your resume.');
     } catch {
       toast.error('Failed to export PDF. Please try again.');
     } finally {

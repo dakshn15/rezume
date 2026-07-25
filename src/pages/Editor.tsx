@@ -55,6 +55,7 @@ const Editor: React.FC = () => {
   const previewRef = useRef<HTMLDivElement>(null);
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const [previewScale, setPreviewScale] = useState(0.5);
+  const [previewContentHeight, setPreviewContentHeight] = useState(A4_HEIGHT_PX);
   const [viewMode, setViewMode] = useState<ViewMode>('fit-page');
   const [showMobilePreview, setShowMobilePreview] = useState(false);
 
@@ -94,6 +95,40 @@ const Editor: React.FC = () => {
     window.addEventListener('resize', computeScale);
     return () => window.removeEventListener('resize', computeScale);
   }, [computeScale]);
+
+  // The preview used to reserve exactly one A4 page and hide any content below
+  // it. Templates such as Professional, Executive and Developer can naturally
+  // extend to a second page, so measure their unscaled height and let the preview
+  // panel scroll through the complete document instead of clipping it.
+  useEffect(() => {
+    const preview = previewRef.current;
+    if (!preview) return;
+
+    let frameId = 0;
+    const measure = () => {
+      cancelAnimationFrame(frameId);
+      frameId = requestAnimationFrame(() => {
+        const contentHeight = Math.max(A4_HEIGHT_PX, preview.scrollHeight);
+        setPreviewContentHeight((previous) => previous === contentHeight ? previous : contentHeight);
+      });
+    };
+
+    const resizeObserver = new ResizeObserver(measure);
+    resizeObserver.observe(preview);
+    if (preview.firstElementChild) resizeObserver.observe(preview.firstElementChild);
+
+    const mutationObserver = new MutationObserver(measure);
+    mutationObserver.observe(preview, { childList: true, subtree: true, characterData: true });
+
+    measure();
+    document.fonts?.ready.then(measure).catch(() => undefined);
+
+    return () => {
+      cancelAnimationFrame(frameId);
+      resizeObserver.disconnect();
+      mutationObserver.disconnect();
+    };
+  }, [currentResume, templateSettings]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -363,7 +398,7 @@ const Editor: React.FC = () => {
             <div
               style={{
                 width: `${A4_WIDTH_PX * previewScale}px`,
-                height: `${A4_HEIGHT_PX * previewScale}px`,
+                height: `${previewContentHeight * previewScale}px`,
               }}
               className="relative shrink-0 shadow-2xl rounded-sm overflow-hidden bg-white transition-all duration-200"
             >

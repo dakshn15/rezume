@@ -6,7 +6,7 @@ export interface TemplateSettings {
   secondaryColor: string;
   accentColor: string;
   fontFamily: string;
-  fontSize: 'small' | 'medium' | 'large';
+  fontSize: 'xs' | 'small' | 'medium' | 'large' | 'xl';
   spacing: 'compact' | 'normal' | 'relaxed';
   showPhoto: boolean;
   showSummary: boolean;

@@ -22,11 +22,21 @@ const colorPresets = [
 ];
 
 const fontOptions = [
-  { name: 'Inter', value: 'Inter', sample: 'Modern & clean' },
-  { name: 'Source Serif', value: 'Source Serif 4', sample: 'Elegant serif' },
-  { name: 'Playfair', value: 'Playfair Display', sample: 'Classic display' },
-  { name: 'JetBrains Mono', value: 'JetBrains Mono', sample: 'Monospace' },
+  { name: 'Inter', value: 'Inter, system-ui, sans-serif', sample: 'Modern & clean' },
+  { name: 'Source Serif', value: '"Source Serif 4", Georgia, serif', sample: 'Elegant serif' },
+  { name: 'Playfair', value: '"Playfair Display", Georgia, serif', sample: 'Classic display' },
+  { name: 'JetBrains Mono', value: '"JetBrains Mono", "Courier New", monospace', sample: 'Technical mono' },
+  { name: 'Arial', value: 'Arial, Helvetica, sans-serif', sample: 'Simple & familiar' },
+  { name: 'Georgia', value: 'Georgia, "Times New Roman", serif', sample: 'Traditional serif' },
 ];
+
+const fontSizeOptions = [
+  { value: 'xs', label: 'Extra small', detail: 'Most compact' },
+  { value: 'small', label: 'Small', detail: 'Compact' },
+  { value: 'medium', label: 'Medium', detail: 'Recommended' },
+  { value: 'large', label: 'Large', detail: 'Easy to read' },
+  { value: 'xl', label: 'Extra large', detail: 'Maximum readability' },
+] as const;
 
 interface CustomizeStepProps {
   onNext: () => void;
@@ -149,7 +159,7 @@ export const CustomizeStep: React.FC<CustomizeStepProps> = ({ onNext, onPrev }) 
                     primaryColor: '#1e3a5f',
                     accentColor: '#3b82f6',
                     secondaryColor: '#3b82f6',
-                    fontFamily: 'Inter',
+                    fontFamily: 'Inter, system-ui, sans-serif',
                     fontSize: 'medium',
                   })}
                   className="text-xs text-muted-foreground hover:text-foreground transition-colors"
@@ -190,6 +200,34 @@ export const CustomizeStep: React.FC<CustomizeStepProps> = ({ onNext, onPrev }) 
                   );
                 })}
               </div>
+              <div className="grid sm:grid-cols-2 gap-3 mt-5 pt-5 border-t">
+                <label className="flex items-center gap-3 rounded-lg border bg-muted/30 px-3 py-2.5 cursor-pointer">
+                  <input
+                    aria-label="Custom primary color"
+                    type="color"
+                    value={templateSettings.primaryColor}
+                    onChange={(event) => updateTemplateSettings({ primaryColor: event.target.value })}
+                    className="h-9 w-10 cursor-pointer rounded border-0 bg-transparent p-0"
+                  />
+                  <span>
+                    <span className="block text-sm font-medium">Primary color</span>
+                    <span className="block text-xs text-muted-foreground">{templateSettings.primaryColor.toUpperCase()}</span>
+                  </span>
+                </label>
+                <label className="flex items-center gap-3 rounded-lg border bg-muted/30 px-3 py-2.5 cursor-pointer">
+                  <input
+                    aria-label="Custom accent color"
+                    type="color"
+                    value={templateSettings.accentColor}
+                    onChange={(event) => updateTemplateSettings({ accentColor: event.target.value, secondaryColor: event.target.value })}
+                    className="h-9 w-10 cursor-pointer rounded border-0 bg-transparent p-0"
+                  />
+                  <span>
+                    <span className="block text-sm font-medium">Accent color</span>
+                    <span className="block text-xs text-muted-foreground">{templateSettings.accentColor.toUpperCase()}</span>
+                  </span>
+                </label>
+              </div>
             </CardContent>
           </Card>
         </motion.div>
@@ -208,9 +246,10 @@ export const CustomizeStep: React.FC<CustomizeStepProps> = ({ onNext, onPrev }) 
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid sm:grid-cols-3 grid-cols-2 gap-3">
                 {fontOptions.map((font) => {
-                  const isSelected = templateSettings.fontFamily === font.value;
+                  const isSelected = templateSettings.fontFamily === font.value ||
+                    (font.name === 'Inter' && templateSettings.fontFamily === 'Inter');
                   return (
                     <button
                       key={font.name}
@@ -243,24 +282,28 @@ export const CustomizeStep: React.FC<CustomizeStepProps> = ({ onNext, onPrev }) 
               <CardTitle>Font Size</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-3 gap-3">
-                {(['small', 'medium', 'large'] as const).map((size) => {
-                  const isSelected = templateSettings.fontSize === size;
+              <div className="grid sm:grid-cols-5 grid-cols-2 gap-3">
+                {fontSizeOptions.map((size) => {
+                  const isSelected = templateSettings.fontSize === size.value;
                   return (
                     <button
-                      key={size}
-                      onClick={() => updateTemplateSettings({ fontSize: size })}
-                      className={`sm:px-4 sm:py-3 px-2 py-1.5 rounded-xl text-sm capitalize font-medium border-2 transition-all duration-200 ${
+                      key={size.value}
+                      onClick={() => updateTemplateSettings({ fontSize: size.value })}
+                      className={`px-3 py-3 rounded-xl text-left border-2 transition-all duration-200 ${
                         isSelected
-                          ? 'border-primary bg-primary text-primary-foreground'
+                          ? 'border-primary bg-primary/10 text-foreground'
                           : 'border-transparent bg-muted/50 hover:bg-muted'
                       }`}
                     >
-                      {size}
+                      <span className="block text-sm font-semibold">{size.label}</span>
+                      <span className="block text-[11px] text-muted-foreground mt-0.5">{size.detail}</span>
                     </button>
                   );
                 })}
               </div>
+              <p className="text-xs text-muted-foreground mt-4">
+                Medium is balanced for a one-page resume. Larger sizes can create additional pages when content is long.
+              </p>
             </CardContent>
           </Card>
         </motion.div>

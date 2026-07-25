@@ -5,7 +5,9 @@ import { TemplateSettings } from '@/store/settingsStore';
 
 const getFontSize = (size: string) => {
     switch (size) {
+        case 'xs': return { base: '10px', heading: '11px', title: '16px' };
         case 'small': return { base: '11px', heading: '12px', title: '18px' };
+        case 'xl': return { base: '15px', heading: '18px', title: '27px' };
         case 'large': return { base: '14px', heading: '16px', title: '24px' };
         default: return { base: '12px', heading: '14px', title: '20px' };
     }

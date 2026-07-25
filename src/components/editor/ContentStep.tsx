@@ -182,7 +182,7 @@ export const ContentStep: React.FC<ContentStepProps> = ({ onNext, initialSection
       </div>
 
       {/* Desktop Section Navigation Sidebar */}
-      <div className="hidden md:flex w-[210px] border-r bg-card shrink-0 flex-col overflow-hidden">
+      <div className="hidden md:flex w-[230px] border-r bg-card shrink-0 flex-col overflow-hidden">
         {/* Samples / Reset */}
         <div className="p-3 border-b space-y-2">
           <div className="relative">
