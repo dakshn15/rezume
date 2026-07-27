@@ -26,14 +26,10 @@ interface SettingsState {
   templateSettings: TemplateSettings;
   exportSettings: ExportSettings;
   showTips: boolean;
-  autoSave: boolean;
-  autoSaveInterval: number;
   
   updateTemplateSettings: (settings: Partial<TemplateSettings>) => void;
   updateExportSettings: (settings: Partial<ExportSettings>) => void;
   toggleTips: () => void;
-  toggleAutoSave: () => void;
-  setAutoSaveInterval: (interval: number) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -59,8 +55,6 @@ export const useSettingsStore = create<SettingsState>()(
         colorMode: 'color',
       },
       showTips: true,
-      autoSave: true,
-      autoSaveInterval: 2000,
 
       updateTemplateSettings: (settings) =>
         set((state) => ({
@@ -73,8 +67,6 @@ export const useSettingsStore = create<SettingsState>()(
         })),
 
       toggleTips: () => set((state) => ({ showTips: !state.showTips })),
-      toggleAutoSave: () => set((state) => ({ autoSave: !state.autoSave })),
-      setAutoSaveInterval: (interval) => set({ autoSaveInterval: interval }),
     }),
     {
       name: 'settings-storage',

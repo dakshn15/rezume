@@ -486,7 +486,7 @@ export const ContentStep: React.FC<ContentStepProps> = ({ onNext, initialSection
                               label="Achievements (one per line)"
                               value={exp.achievements.join('\n')}
                               onChange={(e) => updateExperience(exp.id, {
-                                achievements: e.target.value.split('\n').filter(Boolean)
+                                achievements: e.target.value.split('\n')
                               })}
                               className="min-h-[100px]"
                             />
@@ -606,7 +606,7 @@ export const ContentStep: React.FC<ContentStepProps> = ({ onNext, initialSection
                           label="Skills (comma-separated)"
                           value={resume.skills.technical.join(', ')}
                           onChange={(e) => updateSkills({
-                            technical: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
+                            technical: e.target.value.split(',').map(s => s.trimStart())
                           })}
                           placeholder="React, TypeScript, Node.js..."
                           className="min-h-[100px]"
@@ -620,7 +620,7 @@ export const ContentStep: React.FC<ContentStepProps> = ({ onNext, initialSection
                           label="Languages (comma-separated)"
                           value={resume.skills.languages.join(', ')}
                           onChange={(e) => updateSkills({
-                            languages: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
+                            languages: e.target.value.split(',').map(s => s.trimStart())
                           })}
                           placeholder="English (Native), Spanish (Fluent)..."
                           className="min-h-[100px]"
@@ -634,7 +634,7 @@ export const ContentStep: React.FC<ContentStepProps> = ({ onNext, initialSection
                           label="Soft Skills (comma-separated)"
                           value={resume.skills.softSkills.join(', ')}
                           onChange={(e) => updateSkills({
-                            softSkills: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
+                            softSkills: e.target.value.split(',').map(s => s.trimStart())
                           })}
                           placeholder="Leadership, Communication..."
                           className="min-h-[100px]"
@@ -706,7 +706,7 @@ export const ContentStep: React.FC<ContentStepProps> = ({ onNext, initialSection
                               label="Technologies (comma-separated)"
                               value={proj.technologies.join(', ')}
                               onChange={(e) => updateProject(proj.id, {
-                                technologies: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
+                                technologies: e.target.value.split(',').map(s => s.trimStart())
                               })}
                             />
                             <CustomInput
@@ -816,7 +816,7 @@ export const ContentStep: React.FC<ContentStepProps> = ({ onNext, initialSection
                         <CustomTextarea
                           label="Awards (one per line)"
                           value={resume.additional.awards.join('\n')}
-                          onChange={(e) => updateAdditional('awards', e.target.value.split('\n').filter(Boolean))}
+                          onChange={(e) => updateAdditional('awards', e.target.value.split('\n'))}
                           className="min-h-[100px]"
                         />
                       </CardContent>
@@ -827,7 +827,7 @@ export const ContentStep: React.FC<ContentStepProps> = ({ onNext, initialSection
                         <CustomTextarea
                           label="Volunteer Work (one per line)"
                           value={resume.additional.volunteer.join('\n')}
-                          onChange={(e) => updateAdditional('volunteer', e.target.value.split('\n').filter(Boolean))}
+                          onChange={(e) => updateAdditional('volunteer', e.target.value.split('\n'))}
                           className="min-h-[100px]"
                         />
                       </CardContent>
@@ -838,7 +838,7 @@ export const ContentStep: React.FC<ContentStepProps> = ({ onNext, initialSection
                         <CustomTextarea
                           label="Hobbies (comma-separated)"
                           value={resume.additional.hobbies.join(', ')}
-                          onChange={(e) => updateAdditional('hobbies', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
+                          onChange={(e) => updateAdditional('hobbies', e.target.value.split(',').map(s => s.trimStart()))}
                           className="min-h-[100px]"
                         />
                       </CardContent>

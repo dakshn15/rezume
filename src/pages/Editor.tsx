@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useResumeStore } from '@/store/resumeStore';
 import { useSettingsStore } from '@/store/settingsStore';
@@ -12,6 +12,7 @@ import { CustomizeStep } from '@/components/editor/CustomizeStep';
 import { FinalizeStep } from '@/components/editor/FinalizeStep';
 import { CustomButton } from '@/components/ui/custom-button';
 import { toast } from 'sonner';
+import api from '@/services/api';
 import {
   FileText, ArrowLeft, Save, Loader2, Eye, EyeOff, X,
   ZoomIn, ZoomOut, Maximize2, Minimize2, Pencil
@@ -25,12 +26,52 @@ export type ViewMode = 'fit-page' | 'fit-width' | 'custom';
 
 const Editor: React.FC = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   // Stores
-  const { currentResume, setTemplate, saveResume, renameResume, isSaving, undo, redo, canUndo, canRedo } =
-    useResumeStore();
+  const {
+    currentResume,
+    setCurrentResume,
+    setTemplate,
+    saveResume,
+    renameResume,
+    fetchResumes,
+    loadResumeById,
+    isSaving,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+  } = useResumeStore();
   const { templateSettings } = useSettingsStore();
+  const activeTemplateSettings = { ...templateSettings, ...currentResume.templateSettings };
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+
+  // Restore saved state properly on mount/refresh
+  useEffect(() => {
+    const initEditor = async () => {
+      const urlId = searchParams.get('id');
+      const templateId = searchParams.get('template');
+
+      if (urlId) {
+        await loadResumeById(urlId);
+      } else if (isAuthenticated()) {
+        const lastSavedId = localStorage.getItem('rezumely-last-saved-resume-id');
+        if (lastSavedId) {
+          await loadResumeById(lastSavedId);
+        } else {
+          await fetchResumes();
+        }
+      }
+
+      if (templateId) {
+        setTemplate(templateId);
+        navigate('/editor', { replace: true });
+      }
+    };
+
+    initEditor();
+  }, []);
 
   // Title state
   const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -64,8 +105,11 @@ const Editor: React.FC = () => {
     const templateId = searchParams.get('template');
     if (templateId) {
       setTemplate(templateId);
+      // A template query is only an instruction for creating/opening the editor.
+      // Leaving it in the URL would overwrite a later saved template on refresh.
+      navigate('/editor', { replace: true });
     }
-  }, [searchParams, setTemplate]);
+  }, [searchParams, setTemplate, navigate]);
 
   // Compute scale based on container bounds and selected view mode
   const computeScale = useCallback(() => {
@@ -274,24 +318,19 @@ const Editor: React.FC = () => {
         </div>
 
         {/* Right */}
-        <div className="sm:flex hidden items-center gap-1.5 sm:gap-2 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
 
-          {isAuthenticated() && (
-            <CustomButton
-              variant="outline"
-              size="sm"
-              onClick={handleSave}
-              disabled={isSaving}
-              className="gap-1.5 flex h-8 px-2.5 text-xs shrink-0"
-            >
-              {isSaving ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <Save className="h-3.5 w-3.5" />
-              )}
-              Save
-            </CustomButton>
-          )}
+          <CustomButton
+            variant="outline"
+            size="sm"
+            onClick={handleSave}
+            disabled={isSaving}
+            className="gap-1.5 flex h-8 px-2.5 text-xs shrink-0"
+            aria-label="Save resume"
+          >
+            {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+            <span className="hidden sm:inline">Save</span>
+          </CustomButton>
         </div>
       </header>
 
@@ -407,7 +446,7 @@ const Editor: React.FC = () => {
                 style={{
                   transform: `scale(${previewScale})`,
                   transformOrigin: 'top left',
-                  fontFamily: templateSettings.fontFamily,
+                    fontFamily: activeTemplateSettings.fontFamily,
                   width: `${A4_WIDTH_PX}px`,
                   minWidth: `${A4_WIDTH_PX}px`,
                   maxWidth: `${A4_WIDTH_PX}px`,
@@ -418,7 +457,7 @@ const Editor: React.FC = () => {
                 <TemplateRenderer
                   resume={currentResume}
                   templateId={currentResume.templateId}
-                  settings={templateSettings}
+                    settings={activeTemplateSettings}
                 />
               </div>
             </div>

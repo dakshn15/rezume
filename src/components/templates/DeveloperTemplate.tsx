@@ -11,7 +11,7 @@ const getFontSize = (size: string) => {
         case 'small': return { base: '12px', heading: '14px', title: '24px', mono: '11px' };
         case 'xl': return { base: '17px', heading: '20px', title: '36px', mono: '16px' };
         case 'large': return { base: '16px', heading: '18px', title: '32px', mono: '15px' };
-        default: return { base: '14px', heading: '16px', title: '28px', mono: '13px' };
+        default: return { base: '12px', heading: '14px', title: '24px', mono: '11px' };
     }
 };
 
@@ -28,7 +28,7 @@ export const DeveloperTemplate: React.FC<TemplateProps> = ({ resume, settings })
     return (
         <div
             className="resume-paper w-full box-border bg-[#0f172a] text-[#f8fafc]"
-            style={{ fontFamily: merged.fontFamily, fontSize: fonts.base, lineHeight: '21px' }}
+            style={{ fontFamily: merged.fontFamily, fontSize: fonts.base, lineHeight: '18px' }}
         >
             {/* Top Banner */}
             <div
@@ -36,9 +36,9 @@ export const DeveloperTemplate: React.FC<TemplateProps> = ({ resume, settings })
                 style={{ backgroundColor: merged.primaryColor }}
             />
 
-            <div className="p-8">
+            <div className="p-5">
                 {/* Header */}
-                <header className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end border-b border-[#334155] pb-6">
+                <header className="mb-4 flex flex-col md:flex-row justify-between items-start md:items-end border-b border-[#334155] pb-3">
                     <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
                             <Terminal size={28} style={{ color: merged.primaryColor }} />
@@ -79,9 +79,9 @@ export const DeveloperTemplate: React.FC<TemplateProps> = ({ resume, settings })
                     </div>
                 </header>
 
-                <div className="grid grid-cols-1 md:grid-cols-[1fr_280px] gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-[1fr_260px] gap-5">
                     {/* Main Column */}
-                    <div className="space-y-8">
+                    <div className="space-y-4">
                         {/* Experience */}
                         {experience.length > 0 && (
                             <section className="print-break-inside-avoid">
@@ -95,7 +95,7 @@ export const DeveloperTemplate: React.FC<TemplateProps> = ({ resume, settings })
                                     </h3>
                                 </div>
 
-                                <div className="space-y-6">
+                                <div className="space-y-3">
                                     {experience.map((exp) => (
                                         <div key={exp.id} className="print-break-inside-avoid relative pl-4 border-l-2 border-[#334155]">
                                             <div
@@ -108,18 +108,18 @@ export const DeveloperTemplate: React.FC<TemplateProps> = ({ resume, settings })
                                                     {formatDateRange(exp.startDate, exp.endDate, exp.current)}
                                                 </span>
                                             </div>
-                                            <div className="text-[#38bdf8] font-medium text-sm mb-3 font-mono">
+                                            <div className="text-[#38bdf8] font-medium text-sm mb-1 font-mono">
                                                 @{exp.company}
                                             </div>
 
                                             {exp.description && (
-                                                <p className="text-[#94a3b8] text-sm mb-3">
+                                                <p className="text-[#94a3b8] text-sm mb-1">
                                                     {exp.description}
                                                 </p>
                                             )}
 
                                             {exp.achievements.length > 0 && (
-                                                <ul className="list-none space-y-1.5 text-sm text-[#cbd5e1]">
+                                            <ul className="list-none space-y-0.5 text-sm text-[#cbd5e1]">
                                                     {exp.achievements.map((achievement, i) => (
                                                         <li key={i} className="flex items-start gap-2">
                                                             <span className="text-[#a3e635] mt-0.5 font-mono">{">"}</span>
@@ -147,9 +147,9 @@ export const DeveloperTemplate: React.FC<TemplateProps> = ({ resume, settings })
                                     </h3>
                                 </div>
 
-                                <div className="grid grid-cols-1 gap-4">
+                                <div className="grid grid-cols-1 gap-2">
                                     {projects.map((project) => (
-                                        <div key={project.id} className="print-break-inside-avoid bg-[#1e293b] p-4 rounded-lg border border-[#334155]">
+                                        <div key={project.id} className="print-break-inside-avoid bg-[#1e293b] p-3 rounded-lg border border-[#334155]">
                                             <div className="flex justify-between items-start mb-2">
                                                 <h4 className="font-bold text-white flex items-center gap-2">
                                                     <Github size={16} />
@@ -184,10 +184,10 @@ export const DeveloperTemplate: React.FC<TemplateProps> = ({ resume, settings })
                     </div>
 
                     {/* Sidebar */}
-                    <div className="space-y-8">
+                    <div className="space-y-4">
                         {/* Summary */}
                         {summary && (
-                            <section className="print-break-inside-avoid bg-[#1e293b] p-4 rounded-lg border border-[#334155]">
+                            <section className="print-break-inside-avoid bg-[#1e293b] p-3 rounded-lg border border-[#334155]">
                                 <h3 className="font-mono text-sm text-[#94a3b8] mb-2 uppercase tracking-widest">// About</h3>
                                 <p className="text-sm text-[#cbd5e1] leading-relaxed">
                                     {summary}
@@ -205,7 +205,7 @@ export const DeveloperTemplate: React.FC<TemplateProps> = ({ resume, settings })
                                 {skills.technical.length > 0 && (
                                     <div className="mb-4">
                                         <div className="text-xs text-[#38bdf8] font-mono mb-2">tech_stack:</div>
-                                        <div style={{ display: 'block', lineHeight: '28px' }}>
+                                        <div style={{ display: 'block', lineHeight: '22px' }}>
                                             {skills.technical.map((skill, i) => (
                                                 <span
                                                     key={i}
@@ -222,7 +222,7 @@ export const DeveloperTemplate: React.FC<TemplateProps> = ({ resume, settings })
                                 {skills.languages.length > 0 && (
                                     <div>
                                         <div className="text-xs text-[#38bdf8] font-mono mb-2">languages:</div>
-                                        <div style={{ display: 'block', lineHeight: '28px' }}>
+                                        <div style={{ display: 'block', lineHeight: '22px' }}>
                                             {skills.languages.map((lang, i) => (
                                                 <span
                                                     key={i}

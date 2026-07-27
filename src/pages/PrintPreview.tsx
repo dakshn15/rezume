@@ -57,7 +57,7 @@ const PrintPreview = () => {
                 <TemplateRenderer
                     resume={resume}
                     templateId={template}
-                    settings={templateSettings}
+                    settings={{ ...templateSettings, ...resume.templateSettings }}
                 />
             </div>
         </div>

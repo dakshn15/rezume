@@ -99,6 +99,11 @@ export const exportToPDF = async (
           ${applicationStyles}
           <style>
             @page { size: ${paperSize}; margin: 0; }
+            *, *::before, *::after {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+              color-adjust: exact !important;
+            }
             html, body {
               width: ${settings.paperSize === 'letter' ? '215.9mm' : '210mm'};
               margin: 0 !important;
@@ -146,7 +151,7 @@ export const exportToPDF = async (
     if (printRoot) linkifyPlainText(printRoot, printDocument);
 
     await printDocument.fonts.ready;
-    await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
 
     onProgress?.({ status: 'generating', progress: 75, message: 'Opening Save as PDF…' });
 

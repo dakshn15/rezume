@@ -1,16 +1,17 @@
 import { create } from 'zustand';
-import { persist, devtools } from 'zustand/middleware';
+import { devtools, persist } from 'zustand/middleware';
 import { Resume, defaultResume, Experience, Education, Project, Certification, Skills } from '@/data/resumeModel';
 import { nanoid } from 'nanoid';
 import api from '@/services/api';
 import { useAuthStore } from './authStore';
+import { TemplateSettings } from './settingsStore';
 
 interface HistoryState {
   past: Resume[];
   future: Resume[];
 }
 
-interface ResumeState {
+export interface ResumeState {
   currentResume: Resume;
   allResumes: Resume[];
   history: HistoryState;
@@ -55,6 +56,7 @@ interface ResumeState {
 
   // Template actions
   setTemplate: (templateId: string) => void;
+  updateResumeTemplateSettings: (settings: Partial<TemplateSettings>) => void;
 
   // Resume management
   createNewResume: (name?: string) => void;
@@ -72,6 +74,7 @@ interface ResumeState {
 
   // API actions
   fetchResumes: () => Promise<void>;
+  loadResumeById: (id: string) => Promise<void>;
   saveResume: (resume: Resume) => Promise<void>;
 
   // Utility
@@ -249,8 +252,8 @@ export const useResumeStore = create<ResumeState>()(
         updateProject: (id, project) => set((state) => ({
           currentResume: {
             ...state.currentResume,
-            projects: state.currentResume.projects.map((proj) =>
-              proj.id === id ? { ...proj, ...project } : proj
+            projects: state.currentResume.projects.map((p) =>
+              p.id === id ? { ...p, ...project } : p
             ),
             updatedAt: new Date().toISOString(),
           },
@@ -260,7 +263,7 @@ export const useResumeStore = create<ResumeState>()(
         deleteProject: (id) => set((state) => ({
           currentResume: {
             ...state.currentResume,
-            projects: state.currentResume.projects.filter((proj) => proj.id !== id),
+            projects: state.currentResume.projects.filter((p) => p.id !== id),
             updatedAt: new Date().toISOString(),
           },
           history: saveToHistory(state),
@@ -332,6 +335,14 @@ export const useResumeStore = create<ResumeState>()(
           currentResume: {
             ...state.currentResume,
             templateId,
+            updatedAt: new Date().toISOString(),
+          },
+        })),
+
+        updateResumeTemplateSettings: (settings) => set((state) => ({
+          currentResume: {
+            ...state.currentResume,
+            templateSettings: { ...state.currentResume.templateSettings, ...settings },
             updatedAt: new Date().toISOString(),
           },
         })),
@@ -431,24 +442,61 @@ export const useResumeStore = create<ResumeState>()(
         // API Actions
         fetchResumes: async () => {
           if (!useAuthStore.getState().isAuthenticated()) {
-            return; // Skip fetching for guests, rely on persisted local state
+            return;
           }
           try {
             const response = await api.get('/resumes');
-            // Assuming backend returns { resumes: Resume[] } or Resume[]
             const fetchedResumes = Array.isArray(response.data) ? response.data : response.data.resumes;
-            // Map backend structure to frontend if needed, for now assume matching or parsing JSON
-            // If backend stores resumeJson, we need to parse it
             const parsedResumes = fetchedResumes.map((r: any) => ({
               ...r,
               ...(typeof r.resumeJson === 'string' ? JSON.parse(r.resumeJson) : r.resumeJson),
-              id: r.id // Ensure ID comes from backend
+              id: r.id,
             }));
 
             set({ allResumes: parsedResumes });
+
+            const lastSavedId = localStorage.getItem('rezumely-last-saved-resume-id');
+            if (lastSavedId) {
+              const match = parsedResumes.find((r: any) => r.id === lastSavedId);
+              if (match) {
+                set({ currentResume: match });
+              }
+            }
           } catch (error: any) {
             if (error.response?.status !== 401 && error.response?.status !== 403) {
               console.error('Failed to fetch resumes:', error);
+            }
+          }
+        },
+
+        loadResumeById: async (id: string) => {
+          const local = get().allResumes.find((r) => r.id === id);
+          if (local) {
+            set({ currentResume: local, history: { past: [], future: [] } });
+            return;
+          }
+
+          if (useAuthStore.getState().isAuthenticated()) {
+            try {
+              const response = await api.get(`/resumes/${id}`);
+              if (response.data) {
+                const parsed = {
+                  ...response.data,
+                  ...(typeof response.data.resumeJson === 'string'
+                    ? JSON.parse(response.data.resumeJson)
+                    : response.data.resumeJson),
+                  id: response.data.id,
+                };
+                set((state) => ({
+                  currentResume: parsed,
+                  allResumes: state.allResumes.some((r) => r.id === id)
+                    ? state.allResumes.map((r) => (r.id === id ? parsed : r))
+                    : [...state.allResumes, parsed],
+                  history: { past: [], future: [] },
+                }));
+              }
+            } catch (e) {
+              console.error('Failed to load resume by ID:', e);
             }
           }
         },
@@ -457,51 +505,47 @@ export const useResumeStore = create<ResumeState>()(
           set({ isSaving: true });
 
           if (!useAuthStore.getState().isAuthenticated()) {
-            // Unauthenticated users rely purely on Zustand local persist
             set({
               lastSaved: new Date().toISOString(),
-              isSaving: false
+              isSaving: false,
             });
             return;
           }
 
           try {
-            // Optimistic update logic:
-            // If the ID is a nanoid (length 21 default), it's likely local-only.
-            // Backend UUIDs are 36 chars.
             const isLocal = resume.id.length < 30;
 
             if (isLocal) {
               const response = await api.post('/resumes', {
-                title: resume.personalInfo.name || 'Untitled Resume',
-                resumeJson: resume
+                title: resume.name || resume.personalInfo.name || 'Untitled Resume',
+                resumeJson: resume,
               });
 
               const newId = response.data.id;
+              localStorage.setItem('rezumely-last-saved-resume-id', newId);
 
-              // Update local state with real backend ID
               set((state) => {
                 const updatedResume = { ...resume, id: newId };
-                const updatedAll = state.allResumes.map(r => r.id === resume.id ? updatedResume : r);
+                const updatedAll = state.allResumes.map((r) => (r.id === resume.id ? updatedResume : r));
                 return {
                   currentResume: updatedResume,
-                  allResumes: updatedAll,
+                  allResumes: updatedAll.some((r) => r.id === newId) ? updatedAll : [...updatedAll, updatedResume],
                   lastSaved: new Date().toISOString(),
-                  isSaving: false
+                  isSaving: false,
                 };
               });
             } else {
               await api.put(`/resumes/${resume.id}`, {
-                title: resume.personalInfo.name || 'Untitled Resume',
-                resumeJson: resume
+                title: resume.name || resume.personalInfo.name || 'Untitled Resume',
+                resumeJson: resume,
               });
+              localStorage.setItem('rezumely-last-saved-resume-id', resume.id);
 
               set({
                 lastSaved: new Date().toISOString(),
-                isSaving: false
+                isSaving: false,
               });
             }
-
           } catch (error: any) {
             if (error.response?.status !== 401 && error.response?.status !== 403) {
               console.error('Failed to save resume:', error);
@@ -509,13 +553,13 @@ export const useResumeStore = create<ResumeState>()(
             set({ isSaving: false });
           }
         },
-
       }),
       {
-        name: 'resume-storage',
+        name: 'rezumely-resume-storage',
         partialize: (state) => ({
           currentResume: state.currentResume,
           allResumes: state.allResumes,
+          lastSaved: state.lastSaved,
         }),
       }
     )

@@ -59,7 +59,7 @@ export const ModernTemplate: React.FC<TemplateProps> = ({ resume, settings }) =>
       <div className="flex" style={{ minHeight: '297mm' }}>
         {/* Sidebar */}
         <div
-          className="w-[72mm] text-white p-6 print:!bg-[var(--primary-color)]"
+          className="w-[72mm] text-white p-6"
           style={{ backgroundColor: settings.primaryColor }}
         >
           {/* Photo placeholder */}

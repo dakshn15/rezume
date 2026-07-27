@@ -10,10 +10,12 @@ import { DeveloperTemplate } from './DeveloperTemplate';
 import { AcademicTemplate } from './AcademicTemplate';
 import { TemplateSettings } from '@/store/settingsStore';
 
+import { defaultResume } from '@/data/resumeModel';
+
 interface TemplateRendererProps {
   resume: Resume;
   templateId: string;
-  settings?: TemplateSettings;
+  settings?: Partial<TemplateSettings>;
 }
 
 export const TemplateRenderer: React.FC<TemplateRendererProps> = ({ resume, templateId, settings }) => {
@@ -33,6 +35,35 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({ resume, temp
 
   const mergedSettings = { ...defaultSettings, ...settings };
 
+  const safeResume: Resume = React.useMemo(() => {
+    if (!resume) return defaultResume;
+    return {
+      ...defaultResume,
+      ...resume,
+      personalInfo: { ...defaultResume.personalInfo, ...(resume.personalInfo || {}) },
+      skills: {
+        technical: (resume.skills?.technical || []).filter((s) => typeof s === 'string' && s.trim().length > 0),
+        languages: (resume.skills?.languages || []).filter((s) => typeof s === 'string' && s.trim().length > 0),
+        softSkills: (resume.skills?.softSkills || []).filter((s) => typeof s === 'string' && s.trim().length > 0),
+      },
+      experience: (resume.experience || []).map((exp) => ({
+        ...exp,
+        achievements: (exp.achievements || []).filter((a) => typeof a === 'string' && a.trim().length > 0),
+      })),
+      education: resume.education || [],
+      projects: (resume.projects || []).map((proj) => ({
+        ...proj,
+        technologies: (proj.technologies || []).filter((t) => typeof t === 'string' && t.trim().length > 0),
+      })),
+      additional: {
+        certifications: resume.additional?.certifications || [],
+        awards: (resume.additional?.awards || []).filter((a) => typeof a === 'string' && a.trim().length > 0),
+        volunteer: (resume.additional?.volunteer || []).filter((v) => typeof v === 'string' && v.trim().length > 0),
+        hobbies: (resume.additional?.hobbies || []).filter((h) => typeof h === 'string' && h.trim().length > 0),
+      },
+    };
+  }, [resume]);
+
   const templates: Record<string, React.FC<{ resume: Resume; settings: TemplateSettings }>> = {
     modern: ModernTemplate,
     classic: ClassicTemplate,
@@ -49,7 +80,7 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({ resume, temp
   // Return the selected template directly; the outer preview container
   // (Editor previewRef) already sets the paper width/scale/shadow, so we
   // should avoid adding another outer wrapper that can interfere with sizing.
-  return <Template resume={resume} settings={mergedSettings} />;
+  return <Template resume={safeResume} settings={mergedSettings} />;
 };
 
 export { templateInfo } from '@/data/templateData';

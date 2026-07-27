@@ -9,7 +9,7 @@ const getFontSize = (size: string) => {
         case 'small': return { base: '11px', heading: '13px', title: '24px' };
         case 'xl': return { base: '16px', heading: '19px', title: '36px' };
         case 'large': return { base: '15px', heading: '17px', title: '32px' };
-        default: return { base: '13px', heading: '15px', title: '28px' };
+        default: return { base: '12px', heading: '14px', title: '25px' };
     }
 };
 
@@ -26,11 +26,11 @@ export const ExecutiveTemplate: React.FC<TemplateProps> = ({ resume, settings })
     return (
         <div
             className="resume-paper w-full box-border bg-[#fdfbf7] text-[#1c1917]"
-            style={{ fontFamily: merged.fontFamily, fontSize: fonts.base, lineHeight: 1.6 }}
+            style={{ fontFamily: merged.fontFamily, fontSize: fonts.base, lineHeight: 1.4 }}
         >
-            <div className="max-w-[850px] mx-auto p-12">
+            <div className="max-w-[850px] mx-auto p-7">
                 {/* Header */}
-                <header className="mb-10 text-center">
+                <header className="mb-5 text-center">
                     <h1
                         className="tracking-widest uppercase mb-3 font-semibold"
                         style={{ fontSize: fonts.title, color: merged.primaryColor }}
@@ -53,7 +53,7 @@ export const ExecutiveTemplate: React.FC<TemplateProps> = ({ resume, settings })
 
                 {/* Executive Summary */}
                 {summary && (
-                    <section className="mb-8">
+                    <section className="mb-4">
                         <h3
                             className="uppercase tracking-[0.15em] mb-4 text-center font-bold"
                             style={{ fontSize: fonts.heading, color: merged.primaryColor }}
@@ -68,7 +68,7 @@ export const ExecutiveTemplate: React.FC<TemplateProps> = ({ resume, settings })
 
                 {/* Core Competencies (Skills) */}
                 {(skills.technical.length > 0 || skills.softSkills.length > 0) && (
-                    <section className="mb-10">
+                    <section className="mb-5">
                         <h3
                             className="uppercase tracking-[0.15em] mb-4 text-center font-bold"
                             style={{ fontSize: fonts.heading, color: merged.primaryColor }}
@@ -87,14 +87,14 @@ export const ExecutiveTemplate: React.FC<TemplateProps> = ({ resume, settings })
 
                 {/* Professional Experience */}
                 {experience.length > 0 && (
-                    <section className="mb-10">
+                    <section className="mb-5">
                         <h3
                             className="uppercase tracking-[0.15em] mb-6 text-center font-bold"
                             style={{ fontSize: fonts.heading, color: merged.primaryColor }}
                         >
                             Professional Experience
                         </h3>
-                        <div className="space-y-8">
+                        <div className="space-y-4">
                             {experience.map((exp) => (
                                 <div key={exp.id} className="print-break-inside-avoid">
                                     <div className="flex flex-col mb-3">
@@ -132,7 +132,7 @@ export const ExecutiveTemplate: React.FC<TemplateProps> = ({ resume, settings })
 
                 {/* Projects */}
                 {projects && projects.length > 0 && (
-                    <section className="mb-10">
+                    <section className="mb-5">
                         <h3
                             className="uppercase tracking-[0.15em] mb-6 text-center font-bold"
                             style={{ fontSize: fonts.heading, color: merged.primaryColor }}

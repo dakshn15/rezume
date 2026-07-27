@@ -70,6 +70,7 @@ export interface Resume {
   createdAt: string;
   updatedAt: string;
   templateId: string;
+  templateSettings?: Partial<import('@/store/settingsStore').TemplateSettings>;
   personalInfo: PersonalInfo;
   summary: string;
   experience: Experience[];

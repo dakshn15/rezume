@@ -69,6 +69,7 @@ export const PublicResume = () => {
                 <TemplateRenderer
                     resume={resume}
                     templateId={resume.templateId || 'modern'}
+                    settings={resume.templateSettings}
                 />
             </div>
             {/* simple footer or branding */}

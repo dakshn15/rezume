@@ -44,8 +44,13 @@ interface CustomizeStepProps {
 }
 
 export const CustomizeStep: React.FC<CustomizeStepProps> = ({ onNext, onPrev }) => {
-  const { currentResume, setTemplate } = useResumeStore();
-  const { templateSettings, updateTemplateSettings } = useSettingsStore();
+  const { currentResume, setTemplate, updateResumeTemplateSettings } = useResumeStore();
+  const { templateSettings: globalTemplateSettings, updateTemplateSettings: updateGlobalTemplateSettings } = useSettingsStore();
+  const templateSettings = { ...globalTemplateSettings, ...currentResume.templateSettings };
+  const updateTemplateSettings = (settings: Partial<typeof globalTemplateSettings>) => {
+    updateGlobalTemplateSettings(settings);
+    updateResumeTemplateSettings(settings);
+  };
 
   return (
     <div className="h-full overflow-y-auto">

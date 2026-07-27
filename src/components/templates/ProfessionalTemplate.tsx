@@ -11,7 +11,7 @@ const getFontSize = (size: string) => {
         case 'small': return { base: '12px', heading: '14px', title: '22px' };
         case 'xl': return { base: '17px', heading: '20px', title: '31px' };
         case 'large': return { base: '16px', heading: '18px', title: '28px' };
-        default: return { base: '14px', heading: '16px', title: '24px' };
+        default: return { base: '12px', heading: '14px', title: '22px' };
     }
 };
 
@@ -28,11 +28,11 @@ export const ProfessionalTemplate: React.FC<TemplateProps> = ({ resume, settings
     return (
         <div
             className="resume-paper w-full box-border bg-white text-gray-800"
-            style={{ fontFamily: merged.fontFamily, fontSize: fonts.base, lineHeight: '21px' }}
+            style={{ fontFamily: merged.fontFamily, fontSize: fonts.base, lineHeight: '18px' }}
         >
             {/* Header section with accent top border */}
             <div
-                className="w-full pt-8 pb-6 px-10 border-b relative"
+                className="w-full pt-5 pb-4 px-7 border-b relative"
                 style={{ borderColor: `${merged.primaryColor}20` }}
             >
                 <div
@@ -61,33 +61,33 @@ export const ProfessionalTemplate: React.FC<TemplateProps> = ({ resume, settings
                         </ResumeLink>
                     )}
                     {personalInfo.phone && (
-                        <ResumeLink href={personalInfo.linkedin} className="flex items-center gap-1.5 hover:text-gray-800 transition-colors">
+                        <ResumeLink href={`tel:${personalInfo.phone}`} className="flex items-center gap-1.5 hover:text-gray-800 transition-colors">
                             <Phone size={12} style={{ color: merged.primaryColor }} />
                             <span>{personalInfo.phone}</span>
                         </ResumeLink>
                     )}
                     {personalInfo.location && (
-                        <ResumeLink href={personalInfo.website} className="flex items-center gap-1.5 hover:text-gray-800 transition-colors">
+                        <div className="flex items-center gap-1.5 hover:text-gray-800 transition-colors">
                             <MapPin size={12} style={{ color: merged.primaryColor }} />
                             <span>{personalInfo.location}</span>
-                        </ResumeLink>
+                        </div>
                     )}
                     {personalInfo.linkedin && (
-                        <div className="flex items-center gap-1.5 hover:text-gray-800 transition-colors">
+                        <ResumeLink href={personalInfo.linkedin} className="flex items-center gap-1.5 hover:text-gray-800 transition-colors">
                             <Linkedin size={12} style={{ color: merged.primaryColor }} />
                             <span>{personalInfo.linkedin.replace('https://www.linkedin.com/in/', '')}</span>
-                        </div>
+                        </ResumeLink>
                     )}
                     {personalInfo.website && (
-                        <div className="flex items-center gap-1.5 hover:text-gray-800 transition-colors">
+                        <ResumeLink href={personalInfo.website} className="flex items-center gap-1.5 hover:text-gray-800 transition-colors">
                             <Globe size={12} style={{ color: merged.primaryColor }} />
                             <span>{personalInfo.website.replace(/^https?:\/\//, '')}</span>
-                        </div>
+                        </ResumeLink>
                     )}
                 </div>
             </div>
 
-            <div className="px-10 py-6 space-y-7">
+            <div className="px-7 py-4 space-y-4">
                 {/* Summary */}
                 {summary && (
                     <section>
@@ -110,7 +110,7 @@ export const ProfessionalTemplate: React.FC<TemplateProps> = ({ resume, settings
                         >
                             Experience
                         </h3>
-                        <div className="space-y-5">
+                        <div className="space-y-3">
                             {experience.map((exp) => (
                                 <div key={exp.id} className="print-break-inside-avoid">
                                     <div className="flex justify-between items-end mb-1">
@@ -140,7 +140,7 @@ export const ProfessionalTemplate: React.FC<TemplateProps> = ({ resume, settings
                 )}
 
                 {/* Education & Skills Grid */}
-                <div className="grid grid-cols-2 gap-8">
+                <div className="grid grid-cols-2 gap-5">
                     {/* Education */}
                     {education.length > 0 && (
                         <section>
