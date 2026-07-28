@@ -116,7 +116,7 @@ const Index = () => {
   return (
     <>
       <Helmet>
-        <title>Rezumely — AI-Powered Resume Builder & Career Intelligence</title>
+        <title>Rezumely - AI-Powered Resume Builder & Career Intelligence</title>
         <meta name="description" content="Create your professional ATS-friendly resume in minutes with AI. Intelligent summary generation, achievement bullet points, and ATS scoring." />
         <meta name="keywords" content="AI resume builder, AI resume maker, AI CV builder, ATS resume maker, Rezumely AI, professional resume templates" />
         <meta property="og:title" content="Rezumely — AI-Powered Resume Builder" />
