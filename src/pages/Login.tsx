@@ -47,7 +47,12 @@ const Login = () => {
                         <div className="p-3 bg-white/10 backdrop-blur-sm rounded-xl">
                             <FileText className="h-8 w-8" />
                         </div>
-                        <span className="text-3xl font-bold tracking-tight">Rezumely</span>
+                        <span className="text-3xl font-bold tracking-tight flex items-center gap-3">
+                            Rezumely
+                            <span className="text-xs bg-blue-500/20 text-blue-300 border border-blue-400/30 px-2.5 py-1 rounded-full font-semibold">
+                                AI Powered
+                            </span>
+                        </span>
                     </div>
                     <h1 className="text-4xl font-extrabold leading-tight mb-4">
                         Build resumes that<br />

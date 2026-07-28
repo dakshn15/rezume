@@ -116,11 +116,11 @@ const Index = () => {
   return (
     <>
       <Helmet>
-        <title>Free Resume Builder & CV Maker | Professional Templates | Rezumely</title>
-        <meta name="description" content="Create your professional ATS-friendly resume in minutes. Use our free resume maker and premium resume templates to land your dream job faster." />
-        <meta name="keywords" content="resume maker, resume builder, resume maker free, resume templates, free ATS resume builder, professional cv builder, CV maker online, resume creator" />
-        <meta property="og:title" content="Free Resume Builder & CV Maker | Rezumely" />
-        <meta property="og:description" content="Create your professional ATS-friendly resume in minutes and land your dream job faster. Try our simple resume maker for free." />
+        <title>Rezumely — AI-Powered Resume Builder & Career Intelligence</title>
+        <meta name="description" content="Create your professional ATS-friendly resume in minutes with AI. Intelligent summary generation, achievement bullet points, and ATS scoring." />
+        <meta name="keywords" content="AI resume builder, AI resume maker, AI CV builder, ATS resume maker, Rezumely AI, professional resume templates" />
+        <meta property="og:title" content="Rezumely — AI-Powered Resume Builder" />
+        <meta property="og:description" content="Create your professional ATS-friendly resume in minutes with AI. Try Rezumely AI for free." />
         <meta property="og:type" content="website" />
       </Helmet>
 
@@ -131,7 +131,12 @@ const Index = () => {
             <div className="w-9 h-9 rounded-md bg-gradient-primary flex items-center justify-center">
               <FileText className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="font-bold text-lg text-foreground">Rezumely</span>
+            <span className="font-bold text-lg text-foreground flex items-center gap-2">
+              Rezumely
+              <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-semibold border border-primary/20">
+                AI Powered
+              </span>
+            </span>
           </Link>
 
           {/* Desktop Navigation */}

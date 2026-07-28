@@ -56,7 +56,12 @@ export const TemplatesPage = () => {
                         <div className="w-9 h-9 rounded-md bg-gradient-primary flex items-center justify-center">
                             <FileText className="h-5 w-5 text-primary-foreground" />
                         </div>
-                        <span className="font-bold text-lg text-foreground">Rezumely</span>
+                        <span className="font-bold text-lg text-foreground flex items-center gap-2">
+                            Rezumely
+                            <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-semibold border border-primary/20">
+                                AI Powered
+                            </span>
+                        </span>
                     </Link>
 
                     <div className="flex items-center gap-4">
