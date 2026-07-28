@@ -40,8 +40,8 @@ const Register = () => {
         setIsLoading(true);
         try {
             const response = await api.post('/auth/register', { name: name.trim(), email, password });
-            const { token, userId } = response.data;
-            setAuth(token, userId);
+            const { token, userId, name: responseName } = response.data;
+            setAuth(token, userId, responseName || name.trim(), email);
             toast.success('Account created! Let\'s build your resume.');
             navigate('/editor');
         } catch (error: any) {
@@ -202,7 +202,7 @@ const Register = () => {
                         >
                             {isLoading ? (
                                 <>
-                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    <Loader2 className="h-4 w-4 animate-spin" />
                                     Creating account...
                                 </>
                             ) : (

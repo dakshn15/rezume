@@ -32,7 +32,7 @@ export const DeveloperTemplate: React.FC<TemplateProps> = ({ resume, settings })
         >
             {/* Top Banner */}
             <div
-                className="w-full h-2"
+                className="w-full h-1.5"
                 style={{ backgroundColor: merged.primaryColor }}
             />
 
@@ -40,8 +40,8 @@ export const DeveloperTemplate: React.FC<TemplateProps> = ({ resume, settings })
                 {/* Header */}
                 <header className="mb-4 flex flex-col md:flex-row justify-between items-start md:items-end border-b border-[#334155] pb-3">
                     <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                            <Terminal size={28} style={{ color: merged.primaryColor }} />
+                        <div className="flex items-center gap-3 mb-1">
+                            <Terminal size={24} style={{ color: merged.primaryColor }} />
                             <h1
                                 className="font-bold tracking-tight"
                                 style={{ fontSize: fonts.title }}
@@ -56,7 +56,7 @@ export const DeveloperTemplate: React.FC<TemplateProps> = ({ resume, settings })
                         )}
                     </div>
 
-                    <div className="flex flex-col gap-1.5 mt-4 md:mt-0 text-sm font-mono text-[#cbd5e1]" style={{ fontSize: fonts.mono }}>
+                    <div className="flex flex-col gap-1.5 mt-2 md:mt-0 text-sm font-mono text-[#cbd5e1]" style={{ fontSize: fonts.mono }}>
                         {personalInfo.email && (
                             <ResumeLink href={personalInfo.email} className="flex items-center gap-2 justify-end">
                                 <span>{personalInfo.email}</span>
@@ -69,7 +69,6 @@ export const DeveloperTemplate: React.FC<TemplateProps> = ({ resume, settings })
                                 <Globe size={14} style={{ color: merged.primaryColor }} />
                             </ResumeLink>
                         )}
-                        {/* Treat website as GitHub for dev template if it looks like one, or just general link */}
                         {personalInfo.website && (
                             <ResumeLink href={personalInfo.website} className="flex items-center gap-2 justify-end">
                                 <span>{personalInfo.website.replace('https://github.com/', '')}</span>
@@ -79,14 +78,24 @@ export const DeveloperTemplate: React.FC<TemplateProps> = ({ resume, settings })
                     </div>
                 </header>
 
-                <div className="grid grid-cols-1 md:grid-cols-[1fr_260px] gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-[1fr_240px] gap-5">
                     {/* Main Column */}
-                    <div className="space-y-4">
+                    <div className="space-y-5">
+                        {/* Summary / About */}
+                        {summary && (
+                            <section className="print-break-inside-avoid bg-[#1e293b] p-3 rounded-lg border border-[#334155]">
+                                <h3 className="font-mono text-sm text-[#94a3b8] mb-2 uppercase tracking-widest">// About</h3>
+                                <p className="text-sm text-[#cbd5e1] leading-relaxed">
+                                    {summary}
+                                </p>
+                            </section>
+                        )}
+
                         {/* Experience */}
                         {experience.length > 0 && (
-                            <section className="print-break-inside-avoid">
-                                <div className="flex items-center gap-2 mb-4">
-                                    <Code2 size={20} style={{ color: merged.primaryColor }} />
+                            <section>
+                                <div className="flex items-center gap-2 mb-3">
+                                    <Code2 size={18} style={{ color: merged.primaryColor }} />
                                     <h3
                                         className="font-bold font-mono tracking-wide uppercase"
                                         style={{ fontSize: fonts.heading, color: merged.primaryColor }}
@@ -95,7 +104,7 @@ export const DeveloperTemplate: React.FC<TemplateProps> = ({ resume, settings })
                                     </h3>
                                 </div>
 
-                                <div className="space-y-3">
+                                <div className="space-y-4">
                                     {experience.map((exp) => (
                                         <div key={exp.id} className="print-break-inside-avoid relative pl-4 border-l-2 border-[#334155]">
                                             <div
@@ -104,7 +113,7 @@ export const DeveloperTemplate: React.FC<TemplateProps> = ({ resume, settings })
                                             />
                                             <div className="flex justify-between items-start mb-1">
                                                 <h4 className="font-bold text-white">{exp.position}</h4>
-                                                <span className="text-xs font-mono text-[#94a3b8] bg-[#1e293b] px-2 py-1 rounded">
+                                                <span className="text-xs font-mono text-[#94a3b8] bg-[#1e293b] px-2 py-0.5 rounded whitespace-nowrap ml-2">
                                                     {formatDateRange(exp.startDate, exp.endDate, exp.current)}
                                                 </span>
                                             </div>
@@ -113,13 +122,13 @@ export const DeveloperTemplate: React.FC<TemplateProps> = ({ resume, settings })
                                             </div>
 
                                             {exp.description && (
-                                                <p className="text-[#94a3b8] text-sm mb-1">
+                                                <p className="text-[#94a3b8] text-sm mb-1.5 leading-relaxed">
                                                     {exp.description}
                                                 </p>
                                             )}
 
                                             {exp.achievements.length > 0 && (
-                                            <ul className="list-none space-y-0.5 text-sm text-[#cbd5e1]">
+                                                <ul className="list-none space-y-1 text-sm text-[#cbd5e1]">
                                                     {exp.achievements.map((achievement, i) => (
                                                         <li key={i} className="flex items-start gap-2">
                                                             <span className="text-[#a3e635] mt-0.5 font-mono">{">"}</span>
@@ -136,9 +145,9 @@ export const DeveloperTemplate: React.FC<TemplateProps> = ({ resume, settings })
 
                         {/* Projects */}
                         {projects.length > 0 && (
-                            <section className="print-break-inside-avoid">
-                                <div className="flex items-center gap-2 mb-4">
-                                    <Database size={20} style={{ color: merged.primaryColor }} />
+                            <section>
+                                <div className="flex items-center gap-2 mb-3">
+                                    <Database size={18} style={{ color: merged.primaryColor }} />
                                     <h3
                                         className="font-bold font-mono tracking-wide uppercase"
                                         style={{ fontSize: fonts.heading, color: merged.primaryColor }}
@@ -147,12 +156,12 @@ export const DeveloperTemplate: React.FC<TemplateProps> = ({ resume, settings })
                                     </h3>
                                 </div>
 
-                                <div className="grid grid-cols-1 gap-2">
+                                <div className="grid grid-cols-1 gap-3">
                                     {projects.map((project) => (
                                         <div key={project.id} className="print-break-inside-avoid bg-[#1e293b] p-3 rounded-lg border border-[#334155]">
-                                            <div className="flex justify-between items-start mb-2">
+                                            <div className="flex justify-between items-start mb-1.5">
                                                 <h4 className="font-bold text-white flex items-center gap-2">
-                                                    <Github size={16} />
+                                                    <Github size={15} />
                                                     {project.name}
                                                 </h4>
                                                 {project.url && (
@@ -161,11 +170,11 @@ export const DeveloperTemplate: React.FC<TemplateProps> = ({ resume, settings })
                                                     </a>
                                                 )}
                                             </div>
-                                            <p className="text-sm text-[#94a3b8] mb-3">
+                                            <p className="text-sm text-[#94a3b8] mb-2 leading-relaxed">
                                                 {project.description}
                                             </p>
                                             {project.technologies.length > 0 && (
-                                                <div className="flex flex-wrap gap-2">
+                                                <div className="flex flex-wrap gap-1.5">
                                                     {project.technologies.map((tech, i) => (
                                                         <span
                                                             key={i}
@@ -185,32 +194,23 @@ export const DeveloperTemplate: React.FC<TemplateProps> = ({ resume, settings })
 
                     {/* Sidebar */}
                     <div className="space-y-4">
-                        {/* Summary */}
-                        {summary && (
-                            <section className="print-break-inside-avoid bg-[#1e293b] p-3 rounded-lg border border-[#334155]">
-                                <h3 className="font-mono text-sm text-[#94a3b8] mb-2 uppercase tracking-widest">// About</h3>
-                                <p className="text-sm text-[#cbd5e1] leading-relaxed">
-                                    {summary}
-                                </p>
-                            </section>
-                        )}
 
                         {/* Skills */}
                         {(skills.technical.length > 0 || skills.languages.length > 0) && (
-                            <section className="print-break-inside-avoid">
-                                <h3 className="font-mono text-sm text-[#94a3b8] mb-4 uppercase tracking-widest border-b border-[#334155] pb-2">
+                            <section>
+                                <h3 className="font-mono text-sm text-[#94a3b8] mb-3 uppercase tracking-widest border-b border-[#334155] pb-2">
                                     {"<Skills />"}
                                 </h3>
 
                                 {skills.technical.length > 0 && (
-                                    <div className="mb-4">
+                                    <div className="mb-3">
                                         <div className="text-xs text-[#38bdf8] font-mono mb-2">tech_stack:</div>
                                         <div style={{ display: 'block', lineHeight: '22px' }}>
                                             {skills.technical.map((skill, i) => (
                                                 <span
                                                     key={i}
                                                     className="text-xs font-mono px-2 py-1 rounded bg-[#1e293b] text-[#a3e635] border border-[#334155]"
-                                                    style={{ display: 'inline-block', marginRight: '8px', marginBottom: '8px' }}
+                                                    style={{ display: 'inline-block', marginRight: '6px', marginBottom: '6px' }}
                                                 >
                                                     {skill}
                                                 </span>
@@ -227,7 +227,7 @@ export const DeveloperTemplate: React.FC<TemplateProps> = ({ resume, settings })
                                                 <span
                                                     key={i}
                                                     className="text-xs font-mono px-2 py-1 rounded bg-[#1e293b] text-[#cbd5e1] border border-[#334155]"
-                                                    style={{ display: 'inline-block', marginRight: '8px', marginBottom: '8px' }}
+                                                    style={{ display: 'inline-block', marginRight: '6px', marginBottom: '6px' }}
                                                 >
                                                     {lang}
                                                 </span>
@@ -240,18 +240,18 @@ export const DeveloperTemplate: React.FC<TemplateProps> = ({ resume, settings })
 
                         {/* Education */}
                         {education.length > 0 && (
-                            <section className="print-break-inside-avoid">
-                                <h3 className="font-mono text-sm text-[#94a3b8] mb-4 uppercase tracking-widest border-b border-[#334155] pb-2">
+                            <section>
+                                <h3 className="font-mono text-sm text-[#94a3b8] mb-3 uppercase tracking-widest border-b border-[#334155] pb-2">
                                     {"<Education />"}
                                 </h3>
 
-                                <div className="space-y-4">
+                                <div className="space-y-3">
                                     {education.map((edu) => (
                                         <div key={edu.id} className="print-break-inside-avoid">
-                                            <h4 className="font-bold text-[#f8fafc] text-sm mb-1">{edu.degree}</h4>
-                                            <div className="text-[#cbd5e1] text-sm mb-1">{edu.field}</div>
+                                            <h4 className="font-bold text-[#f8fafc] text-sm">{edu.degree}</h4>
+                                            <div className="text-[#cbd5e1] text-sm">{edu.field}</div>
                                             <div className="text-[#94a3b8] text-xs font-mono">{edu.institution}</div>
-                                            <div className="text-[#64748b] text-xs font-mono mt-1">
+                                            <div className="text-[#64748b] text-xs font-mono mt-0.5">
                                                 {formatDateRange(edu.startDate, edu.endDate, false)}
                                             </div>
                                         </div>
@@ -262,12 +262,12 @@ export const DeveloperTemplate: React.FC<TemplateProps> = ({ resume, settings })
 
                         {/* Certifications */}
                         {additional?.certifications && additional.certifications.length > 0 && (
-                            <section className="print-break-inside-avoid">
-                                <h3 className="font-mono text-sm text-[#94a3b8] mb-4 uppercase tracking-widest border-b border-[#334155] pb-2">
+                            <section>
+                                <h3 className="font-mono text-sm text-[#94a3b8] mb-3 uppercase tracking-widest border-b border-[#334155] pb-2">
                                     {"<Certifications />"}
                                 </h3>
 
-                                <div className="space-y-3">
+                                <div className="space-y-2.5">
                                     {additional.certifications.map((cert: any, idx: number) => {
                                         const certName = typeof cert === 'string' ? cert : cert.name || '';
                                         const certIssuer = typeof cert === 'object' && cert.issuer ? cert.issuer : '';

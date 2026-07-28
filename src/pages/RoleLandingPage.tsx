@@ -60,13 +60,13 @@ export const RoleLandingPage = () => {
                 <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <Button variant="ghost" size="sm" onClick={() => navigate('/')}>
-                            <ArrowLeft className="h-4 w-4 mr-2" />
+                            <ArrowLeft className="h-4 w-4" />
                             Back
                         </Button>
                         <h1 className="text-xl font-semibold hidden md:block">{template.title}</h1>
                     </div>
                     <Button onClick={handleUseTemplate} size="lg" className="shadow-md">
-                        <Edit className="h-4 w-4 mr-2" />
+                        <Edit className="h-4 w-4" />
                         Use This Template
                     </Button>
                 </div>

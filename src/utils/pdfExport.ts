@@ -90,6 +90,13 @@ export const exportToPDF = async (
     // resume filename so users do not receive "… — Editor | Rezumely.pdf".
     document.title = documentTitle;
 
+    // Detect the template's background color before cloning so we can apply
+    // it to the print document's body, ensuring it fills the entire A4 page.
+    const resumePaper = element.querySelector('.resume-paper') as HTMLElement | null;
+    const templateBg = resumePaper
+      ? getComputedStyle(resumePaper).backgroundColor
+      : '#ffffff';
+
     printDocument.open();
     printDocument.write(`<!doctype html>
       <html>
@@ -108,7 +115,7 @@ export const exportToPDF = async (
               width: ${settings.paperSize === 'letter' ? '215.9mm' : '210mm'};
               margin: 0 !important;
               padding: 0 !important;
-              background: #fff !important;
+              background: ${templateBg} !important;
               -webkit-print-color-adjust: exact !important;
               print-color-adjust: exact !important;
             }
@@ -123,10 +130,9 @@ export const exportToPDF = async (
             #resume-print-root .resume-paper,
             #resume-print-root .resume-template {
               margin: 0 !important;
-              /* A screen-only A4 min-height can spill by a few pixels into a
-                 completely blank second printed page. Let print pagination
-                 use the real content height instead. */
-              min-height: 0 !important;
+              /* Use a value just shy of full A4 height so the background fills
+                 the page without a sub-pixel overflow creating a blank page 2. */
+              min-height: 296.5mm !important;
               transform: none !important;
               box-shadow: none !important;
               border-radius: 0 !important;
@@ -152,6 +158,7 @@ export const exportToPDF = async (
 
     await printDocument.fonts.ready;
     await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+
 
     onProgress?.({ status: 'generating', progress: 75, message: 'Opening Save as PDF…' });
 

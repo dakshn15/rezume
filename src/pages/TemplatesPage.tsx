@@ -4,7 +4,10 @@ import { motion } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
 import { templateInfo } from '@/data/templateData';
 import { CustomButton } from '@/components/ui/custom-button';
-import { FileText, CheckCircle2, ChevronRight, Menu, X, ArrowLeft } from 'lucide-react';
+import { FileText, CheckCircle2, ChevronRight, Menu, X, ArrowLeft, LogOut } from 'lucide-react';
+import { UserMenu } from '@/components/common/UserMenu';
+import { useAuthStore } from '@/store/authStore';
+import { toast } from 'sonner';
 
 // Fallback images - placeholder for generated thumbnails
 const getThumbnail = (id: string) => {
@@ -26,6 +29,8 @@ export const TemplatesPage = () => {
     const navigate = useNavigate();
     const [activeCategory, setActiveCategory] = useState('All');
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+    const logout = useAuthStore((s) => s.logout);
 
     const filteredTemplates = activeCategory === 'All'
         ? templateInfo
@@ -44,7 +49,7 @@ export const TemplatesPage = () => {
                 <meta name="description" content="Browse our collection of professional, ATS-friendly resume templates. Perfect for any industry." />
             </Helmet>
 
-            {/* Navigation - simplified version of Index.tsx nav */}
+            {/* Navigation */}
             <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
                 <div className="container mx-auto px-4 h-16 flex items-center justify-between">
                     <Link to="/" className="flex items-center gap-2">
@@ -54,27 +59,36 @@ export const TemplatesPage = () => {
                         <span className="font-bold text-lg text-foreground">Rezumely</span>
                     </Link>
 
-                    <div className="hidden md:flex items-center space-x-8">
-                        <button onClick={() => navigate('/')} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                    <div className="flex items-center gap-4">
+                        <button onClick={() => navigate('/')} className="hidden md:block text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
                             Home
                         </button>
-                        <CustomButton variant="primary" onClick={() => navigate('/editor')}>
-                            Build Resume
-                        </CustomButton>
+                        <UserMenu />
+                        <button className="md:hidden text-foreground hover:text-accent transition-colors" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+                            {isMobileMenuOpen ? <X /> : <Menu />}
+                        </button>
                     </div>
-
-                    <button className="md:hidden" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-                        {isMobileMenuOpen ? <X /> : <Menu />}
-                    </button>
                 </div>
 
                 {/* Mobile Menu */}
                 {isMobileMenuOpen && (
                     <div className="md:hidden absolute top-16 left-0 right-0 bg-background border-b shadow-lg p-4 flex flex-col gap-4">
-                        <button onClick={() => navigate('/')} className="text-left py-2 font-medium">Home</button>
-                        <CustomButton variant="primary" onClick={() => navigate('/editor')} className="w-full">
-                            Build Resume
-                        </CustomButton>
+                        <button onClick={() => { setIsMobileMenuOpen(false); navigate('/'); }} className="text-left py-2 font-medium">Home</button>
+                        <button onClick={() => { setIsMobileMenuOpen(false); navigate('/editor'); }} className="text-left py-2 font-medium">Build Resume</button>
+                        {isAuthenticated() && (
+                            <button
+                                onClick={() => {
+                                    logout();
+                                    toast.success('Logged out successfully');
+                                    setIsMobileMenuOpen(false);
+                                    navigate('/');
+                                }}
+                                className="text-left py-2 font-medium text-red-600 flex items-center gap-2"
+                            >
+                                <LogOut className="h-4 w-4" />
+                                Logout
+                            </button>
+                        )}
                     </div>
                 )}
             </nav>

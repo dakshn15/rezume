@@ -7,7 +7,7 @@ import {
   FileText, Palette, Download, Sparkles, ArrowRight, CheckCircle,
   Mail, Phone, MapPin, Send, Star, Zap, Shield, Clock,
   Linkedin, Twitter, Github, Menu, X, ChevronLeft, ChevronRight,
-  ChevronDown, MessageSquare
+  ChevronDown, MessageSquare, LogOut
 } from 'lucide-react';
 import { CustomButton } from '@/components/ui/custom-button';
 import { CustomInput } from '@/components/ui/custom-input';
@@ -18,6 +18,7 @@ import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 import { Pagination } from 'swiper/modules';
 import { useAuthStore } from '@/store/authStore';
+import { UserMenu } from '@/components/common/UserMenu';
 
 const Index = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -142,36 +143,7 @@ const Index = () => {
           </nav>
 
           <div className="flex items-center gap-4">
-            {isAuthenticated() ? (
-              <div className="hidden sm:flex items-center gap-4">
-                <Link to="/templates" className="hidden sm:block">
-                  <CustomButton variant="primary" size="sm">
-                    Build Resume <ArrowRight />
-                  </CustomButton>
-                </Link>
-                <button
-                  onClick={() => {
-                    logout();
-                    toast.success('Logged out');
-                    navigate('/');
-                  }}
-                  className="text-sm font-medium hover:text-red-600 transition-colors"
-                >
-                  Logout
-                </button>
-              </div>
-            ) : (
-              <div className="hidden sm:flex items-center gap-4">
-                <Link to="/login" className="text-sm font-medium hover:text-primary transition-colors">
-                  Login
-                </Link>
-                <Link to="/register">
-                  <CustomButton variant="primary" size="sm">
-                    Get Started <ArrowRight />
-                  </CustomButton>
-                </Link>
-              </div>
-            )}
+            <UserMenu />
 
             {/* Mobile Menu Button */}
             <button
@@ -221,27 +193,46 @@ const Index = () => {
               >
                 Contact
               </a>
-              <Link
-                to="/templates"
-                className="block sm:hidden"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                <CustomButton variant="primary" size="sm" className="w-full">
-                  Get Started <ArrowRight />
-                </CustomButton>
-              </Link>
-              {isAuthenticated() && (
-                <button
-                  onClick={() => {
-                    logout();
-                    toast.success('Logged out');
-                    setIsMobileMenuOpen(false);
-                    navigate('/');
-                  }}
-                  className="w-full px-4 py-2 text-sm hover:bg-muted transition-colors"
-                >
-                  Logout
-                </button>
+              {isAuthenticated() ? (
+                <div className="pt-2 border-t flex flex-col gap-3">
+                  <Link
+                    to="/editor"
+                    className="block text-sm font-medium text-foreground hover:text-primary transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Resume Editor
+                  </Link>
+                  <button
+                    onClick={() => {
+                      logout();
+                      toast.success('Logged out successfully');
+                      setIsMobileMenuOpen(false);
+                      navigate('/');
+                    }}
+                    className="w-full text-left py-2 text-sm font-medium text-red-600 hover:text-red-700 transition-colors flex items-center gap-2"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <div className="pt-2 border-t flex flex-col gap-3">
+                  <Link
+                    to="/login"
+                    className="block text-sm font-medium text-foreground hover:text-primary transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    to="/register"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <CustomButton variant="primary" size="sm" className="w-full">
+                      Get Started <ArrowRight />
+                    </CustomButton>
+                  </Link>
+                </div>
               )}
             </nav>
           </motion.div>

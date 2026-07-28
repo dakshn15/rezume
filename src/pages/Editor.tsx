@@ -13,6 +13,7 @@ import { FinalizeStep } from '@/components/editor/FinalizeStep';
 import { CustomButton } from '@/components/ui/custom-button';
 import { toast } from 'sonner';
 import api from '@/services/api';
+import { UserMenu } from '@/components/common/UserMenu';
 import {
   FileText, ArrowLeft, Save, Loader2, Eye, EyeOff, X,
   ZoomIn, ZoomOut, Maximize2, Minimize2, Pencil
@@ -53,15 +54,28 @@ const Editor: React.FC = () => {
       const urlId = searchParams.get('id');
       const templateId = searchParams.get('template');
 
-      if (urlId) {
-        await loadResumeById(urlId);
-      } else if (isAuthenticated()) {
+      if (isAuthenticated()) {
+        await useAuthStore.getState().fetchUserProfile();
         const lastSavedId = localStorage.getItem('rezumely-last-saved-resume-id');
-        if (lastSavedId) {
+        if (urlId) {
+          await loadResumeById(urlId);
+        } else if (lastSavedId) {
           await loadResumeById(lastSavedId);
         } else {
           await fetchResumes();
         }
+
+        // Auto-fill actual user name & email from database if starting a new draft with empty name
+        const { userName, userEmail } = useAuthStore.getState();
+        const current = useResumeStore.getState().currentResume;
+        if (userName && (!current.personalInfo?.name || current.personalInfo.name === '')) {
+          useResumeStore.getState().updatePersonalInfo({
+            name: userName,
+            ...(userEmail && (!current.personalInfo?.email || current.personalInfo.email === '') ? { email: userEmail } : {}),
+          });
+        }
+      } else if (urlId) {
+        await loadResumeById(urlId);
       }
 
       if (templateId) {
@@ -261,76 +275,90 @@ const Editor: React.FC = () => {
       </Helmet>
 
       {/* ========== TOP BAR ========== */}
-      <header className="py-2 border-b bg-card/95 backdrop-blur-sm flex flex-wrap items-center justify-between px-2 sm:px-4 shrink-0 z-20 gap-2 overflow-hidden">
-        {/* Left */}
-        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 min-w-0">
-          <Link
-            to="/templates"
-            className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors text-xs sm:text-sm font-medium shrink-0"
-            title="Choose Template"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span className="hidden md:inline">Templates</span>
-          </Link>
-          <div className="hidden md:block h-4 w-px bg-border shrink-0" />
-          <div className="flex items-center gap-1.5 min-w-0">
-            <div className="w-7 h-7 rounded-md bg-gradient-primary flex items-center justify-center shrink-0">
-              <FileText className="h-3.5 w-3.5 text-primary-foreground" />
+      <header className="border-b bg-card/95 backdrop-blur-sm shrink-0 z-20 overflow-hidden">
+        {/* Top Header Row */}
+        <div className="py-2 px-3 sm:px-4 flex items-center justify-between gap-2">
+          {/* Left */}
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 min-w-0">
+            <Link
+              to="/templates"
+              className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors text-xs sm:text-sm font-medium shrink-0"
+              title="Choose Template"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span className="hidden md:inline">Templates</span>
+            </Link>
+            <div className="hidden md:block h-4 w-px bg-border shrink-0" />
+            <div className="flex items-center gap-1.5 min-w-0">
+              <div className="w-7 h-7 rounded-md bg-gradient-primary flex items-center justify-center shrink-0">
+                <FileText className="h-3.5 w-3.5 text-primary-foreground" />
+              </div>
+              {isEditingTitle ? (
+                <input
+                  type="text"
+                  value={titleText}
+                  onChange={(e) => setTitleText(e.target.value)}
+                  onBlur={handleSaveTitle}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleSaveTitle();
+                    if (e.key === 'Escape') {
+                      setTitleText(currentResume.name || 'Untitled Resume');
+                      setIsEditingTitle(false);
+                    }
+                  }}
+                  autoFocus
+                  className="text-xs sm:text-sm font-semibold bg-muted px-2 py-0.5 rounded border border-primary outline-none max-w-[120px] sm:max-w-[160px] md:max-w-[200px]"
+                />
+              ) : (
+                <button
+                  onClick={() => setIsEditingTitle(true)}
+                  title="Click to title/rename your resume"
+                  className="flex items-center gap-1 text-xs sm:text-sm font-semibold hover:bg-muted/70 rounded transition-colors group text-left min-w-0"
+                >
+                  <span className="truncate max-w-[100px] sm:max-w-[150px] md:max-w-[200px]">
+                    {currentResume.name || 'Untitled Resume'}
+                  </span>
+                  <Pencil className="h-3 w-3 text-muted-foreground opacity-50 group-hover:opacity-100 shrink-0 transition-opacity" />
+                </button>
+              )}
             </div>
-            {isEditingTitle ? (
-              <input
-                type="text"
-                value={titleText}
-                onChange={(e) => setTitleText(e.target.value)}
-                onBlur={handleSaveTitle}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleSaveTitle();
-                  if (e.key === 'Escape') {
-                    setTitleText(currentResume.name || 'Untitled Resume');
-                    setIsEditingTitle(false);
-                  }
-                }}
-                autoFocus
-                className="text-xs sm:text-sm font-semibold bg-muted px-2 py-0.5 rounded border border-primary outline-none max-w-[120px] sm:max-w-[160px] md:max-w-[200px]"
-              />
-            ) : (
-              <button
-                onClick={() => setIsEditingTitle(true)}
-                title="Click to title/rename your resume"
-                className="flex items-center gap-1 text-xs sm:text-sm font-semibold hover:bg-muted/70 rounded transition-colors group text-left min-w-0"
-              >
-                <span className="truncate max-w-[90px] sm:max-w-[140px] md:max-w-[180px]">
-                  {currentResume.name || 'Untitled Resume'}
-                </span>
-                <Pencil className="h-3 w-3 text-muted-foreground opacity-50 group-hover:opacity-100 shrink-0 transition-opacity" />
-              </button>
-            )}
+          </div>
+
+          {/* Center — Stepper (Desktop view lg+) */}
+          <div className="hidden lg:flex justify-center min-w-0 px-1">
+            <EditorStepper
+              activeStep={activeStep}
+              onStepChange={goToStep}
+              completedSteps={completedSteps}
+            />
+          </div>
+
+          {/* Right */}
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            <CustomButton
+              variant="outline"
+              size="sm"
+              onClick={handleSave}
+              disabled={isSaving}
+              className="gap-1.5 flex h-8 px-2.5 text-xs shrink-0"
+              aria-label="Save resume"
+            >
+              {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+              <span>Save</span>
+            </CustomButton>
+            <div className="h-4 w-px bg-border shrink-0" />
+            <UserMenu variant="editor" />
           </div>
         </div>
 
-        {/* Center — Stepper */}
-        <div className="flex justify-center min-w-0 px-1">
+        {/* Bottom Sub-Header Row for Mobile/Tablet (< lg / 1024px) — Stepper Tabs with Labels */}
+        <div className="lg:hidden border-t py-1.5 px-2 bg-card/60 overflow-x-auto flex shadow-inner">
           <EditorStepper
             activeStep={activeStep}
             onStepChange={goToStep}
             completedSteps={completedSteps}
+            showLabelsAlways={true}
           />
-        </div>
-
-        {/* Right */}
-        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-
-          <CustomButton
-            variant="outline"
-            size="sm"
-            onClick={handleSave}
-            disabled={isSaving}
-            className="gap-1.5 flex h-8 px-2.5 text-xs shrink-0"
-            aria-label="Save resume"
-          >
-            {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
-            <span className="hidden sm:inline">Save</span>
-          </CustomButton>
         </div>
       </header>
 

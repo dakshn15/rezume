@@ -21,8 +21,8 @@ const Login = () => {
         setIsLoading(true);
         try {
             const response = await api.post('/auth/login', { email, password });
-            const { token, userId } = response.data;
-            setAuth(token, userId);
+            const { token, userId, name } = response.data;
+            setAuth(token, userId, name || email.split('@')[0], email);
             toast.success('Welcome back!');
             navigate('/editor');
         } catch (error: any) {
@@ -129,7 +129,7 @@ const Login = () => {
                         >
                             {isLoading ? (
                                 <>
-                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    <Loader2 className="h-4 w-4 animate-spin" />
                                     Signing in...
                                 </>
                             ) : (
