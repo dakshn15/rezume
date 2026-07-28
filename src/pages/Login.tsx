@@ -43,17 +43,9 @@ const Login = () => {
                     <div className="absolute bottom-20 right-20 w-96 h-96 bg-blue-300 rounded-full blur-3xl" />
                 </div>
                 <div className="relative z-10 flex flex-col justify-center items-start p-16 text-white">
-                    <div className="flex items-center gap-3 mb-8">
-                        <div className="p-3 bg-white/10 backdrop-blur-sm rounded-xl">
-                            <FileText className="h-8 w-8" />
-                        </div>
-                        <span className="text-3xl font-bold tracking-tight flex items-center gap-3">
-                            Rezumely
-                            <span className="text-xs bg-blue-500/20 text-blue-300 border border-blue-400/30 px-2.5 py-1 rounded-full font-semibold">
-                                AI Powered
-                            </span>
-                        </span>
-                    </div>
+                    <Link to="/" className="flex items-center gap-3 mb-8">
+                        <img src="/logo-light.png" alt="Rezumely" className="h-10 w-auto object-contain" />
+                    </Link>
                     <h1 className="text-4xl font-extrabold leading-tight mb-4">
                         Build resumes that<br />
                         <span className="text-blue-300">land interviews.</span>
@@ -82,10 +74,9 @@ const Login = () => {
             <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-slate-50">
                 <div className="w-full max-w-md">
                     {/* Mobile Logo */}
-                    <div className="flex items-center gap-2 mb-8 lg:hidden">
-                        <FileText className="h-6 w-6 text-blue-600" />
-                        <span className="text-xl font-bold">Rezumely</span>
-                    </div>
+                    <Link to="/" className="flex items-center gap-2 mb-8 lg:hidden">
+                        <img src="/logo-dark.png" alt="Rezumely" className="h-8 w-auto object-contain" />
+                    </Link>
 
                     <div className="mb-8">
                         <h2 className="sm:text-2xl text-xl font-bold text-slate-900">Welcome back</h2>

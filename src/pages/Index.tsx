@@ -128,15 +128,7 @@ const Index = () => {
       <header className="sticky top-0 left-0 right-0 z-50 glass border-b shadow-md">
         <div className="container mx-auto md:py-4 py-3 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-md bg-gradient-primary flex items-center justify-center">
-              <FileText className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <span className="font-bold text-lg text-foreground flex items-center gap-2">
-              Rezumely
-              <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-semibold border border-primary/20">
-                AI Powered
-              </span>
-            </span>
+            <img src="/logo-dark.png" alt="Rezumely" className="h-8 sm:h-9 w-auto object-contain" />
           </Link>
 
           {/* Desktop Navigation */}
@@ -1230,14 +1222,9 @@ const Index = () => {
           >
             {/* Enhanced Brand Section */}
             <div className="lg:col-span-2 sm:col-span-2 md:text-start text-center">
-              <div
-                className="flex items-center md:justify-start justify-center gap-3 lg:mb-6 mb-5"
-              >
-                <div className="lg:w-14 w-12 lg:h-14 h-12 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg">
-                  <FileText className="lg:h-7 lg:w-7 w-6 h-6 text-white" />
-                </div>
-                <span className="font-black lg:text-3xl text-2xl text-white">Rezumely</span>
-              </div>
+              <Link to="/" className="flex items-center md:justify-start justify-center gap-3 lg:mb-6 mb-5">
+                <img src="/logo-light.png" alt="Rezumely" className="h-10 sm:h-12 w-auto object-contain" />
+              </Link>
               <p className="text-white/80 max-w-md md:mx-0 mx-auto lg:mb-8 mb-5 lg:text-lg">
                 Transform your career with professional, ATS-optimized resumes. Join <span className="font-semibold text-white">50,000+</span> professionals who've landed their dream jobs using our free resume builder.
               </p>

@@ -183,11 +183,7 @@ export const BlogPost = () => {
                 <div className="container mx-auto px-4 sm:px-6 md:py-4 py-3 flex items-center justify-between gap-2">
                     {/* Logo */}
                     <Link to="/" className="flex items-center gap-2 flex-shrink-0">
-                        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center"
-                            style={{ background: 'linear-gradient(135deg, hsl(222 47% 20%) 0%, hsl(217 91% 45%) 100%)' }}>
-                            <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
-                        </div>
-                        <span className="font-bold text-base sm:text-lg hidden xs:block" style={{ color: 'hsl(222 47% 11%)' }}>Rezumely</span>
+                        <img src="/logo-dark.png" alt="Rezumely" className="h-7 sm:h-8 w-auto object-contain" />
                     </Link>
 
                     {/* Breadcrumb — visible on md+ */}
@@ -400,10 +396,7 @@ export const BlogPost = () => {
                 <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs"
                     style={{ color: 'hsl(215 16% 55%)' }}>
                     <div className="flex items-center gap-2">
-                        <div className="w-5 h-5 rounded-md flex items-center justify-center"
-                            style={{ background: 'linear-gradient(135deg, hsl(222 47% 20%) 0%, hsl(217 91% 45%) 100%)' }}>
-                            <FileText className="h-2.5 w-2.5 text-white" />
-                        </div>
+                        <img src="/logo-dark.png" alt="Rezumely" className="h-5 w-auto object-contain" />
                         © 2025 Rezumely
                     </div>
                     <div className="flex items-center gap-4 sm:gap-5">

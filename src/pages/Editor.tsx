@@ -289,10 +289,10 @@ const Editor: React.FC = () => {
               <span className="hidden md:inline">Templates</span>
             </Link>
             <div className="hidden md:block h-4 w-px bg-border shrink-0" />
-            <div className="flex items-center gap-1.5 min-w-0">
-              <div className="w-7 h-7 rounded-md bg-gradient-primary flex items-center justify-center shrink-0">
-                <FileText className="h-3.5 w-3.5 text-primary-foreground" />
-              </div>
+            <div className="flex items-center gap-2 min-w-0">
+              <Link to="/" className="shrink-0 flex items-center" title="Rezumely Home">
+                <img src="/favicon.png" alt="Rezumely" className="h-7 w-7 object-contain" />
+              </Link>
               {isEditingTitle ? (
                 <input
                   type="text"
